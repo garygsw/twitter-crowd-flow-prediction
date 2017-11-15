@@ -5,12 +5,10 @@ Usage:
 """
 from __future__ import print_function
 import os
-import sys
 import cPickle as pickle
 import time
 import numpy as np
 import h5py
-from datetime import datetime
 from statsmodels.tsa.arima_model import ARIMA
 from dataset import load_data
 import warnings
@@ -22,9 +20,9 @@ np.random.seed(1337)  # for reproducibility
 # parameters
 cv_set_dirs = ['cv_set_1', 'cv_set_2', 'cv_set_3', 'cv_set_4']                # CHANGE: name
 map_height, map_width = 46, 87          # CHANGE: grid size (23, 44) - 1km, (46, 87) - 500m
-use_meta = True
-use_weather = True
-use_holidays = True
+use_meta = False
+use_weather = False
+use_holidays = False
 len_timeslot = 30       # 30 minutes per time slot
 DATAPATH = 'dataset'
 
