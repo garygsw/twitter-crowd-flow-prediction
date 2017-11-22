@@ -13,7 +13,6 @@ from keras.layers import (
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
-#from keras.utils.visualize_util import plot
 
 
 def _shortcut(input, residual):
@@ -25,7 +24,7 @@ def _bn_relu_conv(nb_filter, nb_row, nb_col, subsample=(1, 1), bn=False):
         if bn:
             input = BatchNormalization(mode=0, axis=1)(input)
         activation = Activation('relu')(input)
-        return Convolution2D(filters=nb_filters, kernal_size=(nb_row, nb_col), subsample=subsample, border_mode="same")(activation)
+        return Convolution2D(nb_filter=nb_filter, nb_row=nb_row, nb_col=nb_col, subsample=subsample, border_mode="same")(activation)
     return f
 
 
@@ -65,13 +64,15 @@ def stresnet(c_conf=(3, 2, 32, 32), p_conf=(3, 2, 32, 32), t_conf=(3, 2, 32, 32)
             input = Input(shape=(nb_flow * len_seq, map_height, map_width))
             main_inputs.append(input)
             # Conv1
-            conv1 = Convolution2D(filters=64, kernal_size=(3, 3), border_mode="same")(input)
+            conv1 = Convolution2D(
+                nb_filter=64, nb_row=3, nb_col=3, border_mode="same")(input)
             # [nb_residual_unit] Residual Units
             residual_output = ResUnits(_residual_unit, nb_filter=64,
                               repetations=nb_residual_unit)(conv1)
             # Conv2
             activation = Activation('relu')(residual_output)
-            conv2 = Convolution2D(filters=nb_flow, kernal_size=(3, 3), border_mode="same")(activation)
+            conv2 = Convolution2D(
+                nb_filter=nb_flow, nb_row=3, nb_col=3, border_mode="same")(activation)
             outputs.append(conv2)
 
     # parameter-matrix-based fusion

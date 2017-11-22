@@ -105,7 +105,7 @@ class STMatrix(object):
         XP = np.asarray(XP)
         XT = np.asarray(XT)
         Y = np.asarray(Y)
-        logging.info("XC shape: " + str(XC.shape) + " XP shape: " + str(XP.shape) + " XT shape: " + str(XT.shape) + " Y shape: " + str(Y.shape))
+        #logging.info("XC shape: " + str(XC.shape) + " XP shape: " + str(XP.shape) + " XT shape: " + str(XT.shape) + " Y shape: " + str(Y.shape))
         return XC, XP, XT, Y, timestamps_Y
 
 
@@ -317,9 +317,9 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         len_test = Y_test.shape[0]
         train_mask = np.tile(mask, [len_train, 1, 1, 1])
         test_mask = np.tile(mask, [len_test, 1, 1, 1])
-        Y_train[~train_mask] = np.nan
-        Y_test[~test_mask] = np.nan
-        logging.info('Y valid inflow cells: %i', np.sum(~np.isnan(Y_train[0][0])))
-        logging.info('Y valid outflow cells: %i', np.sum(~np.isnan(Y_train[0][1])))
+        Y_train[~train_mask] = 2
+        Y_test[~test_mask] = 2
+        logging.info('Y valid inflow cells: %i', np.sum(np.where(Y_train[0][0] != 2)))
+        logging.info('Y valid outflow cells: %i', np.sum(np.where(Y_train[0][1] != 2)))
 
     return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test

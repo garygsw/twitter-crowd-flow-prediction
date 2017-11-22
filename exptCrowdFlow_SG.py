@@ -251,7 +251,7 @@ def main():
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
-                preprocess_name=preprocess_fname,
+                preprocess_name=preprocess_fpath,
                 meta_data=use_meta,
                 weather_data=use_weather,
                 holiday_data=use_holidays,
