@@ -1,4 +1,4 @@
-# import numpy as np
+import numpy as np
 from keras import backend as K
 
 
@@ -17,9 +17,8 @@ def rmse(y_true, y_pred):
 mse = MSE = mean_squared_error
 # rmse = RMSE = root_mean_square_error
 
-
 def masked_mean_squared_error(y_true, y_pred):
-    idx = (y_true > 1e-6).nonzero()
+    idx = ~np.isnan(y_true)
     return K.mean(K.square(y_pred[idx] - y_true[idx]))
 
 

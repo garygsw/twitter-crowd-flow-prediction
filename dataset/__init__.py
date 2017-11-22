@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 import pickle
 from copy import copy
 import pandas as pd
@@ -39,7 +40,7 @@ class STMatrix(object):
                 missing_timestamps.append("(%s -- %s)" % (pd_timestamps[i-1], pd_timestamps[i]))
             i += 1
         for v in missing_timestamps:
-            print(v)
+            logging.debug(v)
         assert len(missing_timestamps) == 0
 
     def get_matrix(self, timestamp):
@@ -104,7 +105,7 @@ class STMatrix(object):
         XP = np.asarray(XP)
         XT = np.asarray(XT)
         Y = np.asarray(Y)
-        #print("XC shape: ", XC.shape, "XP shape: ", XP.shape, "XT shape: ", XT.shape, "Y shape:", Y.shape)
+        logging.info("XC shape: ", XC.shape, "XP shape: ", XP.shape, "XT shape: ", XT.shape, "Y shape:", Y.shape)
         return XC, XP, XT, Y, timestamps_Y
 
 
@@ -126,6 +127,7 @@ def stat(fname):
         nb_day = int(nb_timeslot / 48)
         mmax = f['data'].value.max()
         mmin = f['data'].value.min()
+        single_mask = f['mask'].value[0][0]
         stat = '=' * 5 + 'stat' + '=' * 5 + '\n' + \
                'data shape: %s\n' % str(f['data'].shape) + \
                '# of days: %i, from %s to %s\n' % (nb_day, ts_str, te_str) + \
@@ -133,8 +135,9 @@ def stat(fname):
                '# of timeslots (available): %i\n' % f['date'].shape[0] + \
                'missing ratio of timeslots: %.1f%%\n' % ((1. - float(f['date'].shape[0] / nb_timeslot)) * 100) + \
                'max: %.3f, min: %.3f\n' % (mmax, mmin) + \
+               '# of valid cells: %i' % sum(single_mask) + \
                '=' * 5 + 'stat' + '=' * 5
-        print(stat)
+        logging.info(stat)
 
 
 def load_holiday(timeslots, datapath):
@@ -142,11 +145,10 @@ def load_holiday(timeslots, datapath):
     holidays = f.readlines()
     holidays = set([h.strip() for h in holidays])
     H = np.zeros(len(timeslots))
-    print(len(timeslots))
     for i, slot in enumerate(timeslots):
         if slot[:8] in holidays:
             H[i] = 1
-    print("total number of holidays/weekends: ", H.sum())
+    logging.info("total number of holidays/weekends: ", H.sum())
     return H[:, None]
 
 
@@ -199,18 +201,18 @@ def load_weather(timeslots, datapath):
     WS = 1. * (WS - WS.min()) / (WS.max() - WS.min())
     TE = 1. * (TE - TE.min()) / (TE.max() - TE.min())
 
-    print("weather shape (windspeed, weather, temperature): ", WS.shape, WR.shape, TE.shape)
+    logging.info("weather shape (windspeed, weather, temperature): ", WS.shape, WR.shape, TE.shape)
 
     # concatenate all these attributes
     merge_data = np.hstack([WR, WS[:, None], TE[:, None]])
 
-    # print('meger shape:', merge_data.shape)
+    logging.info('meger shape:', merge_data.shape)
     return merge_data
 
 
 def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
               len_closeness=None, len_period=None, len_trend=None,
-              period_interval=1, trend_interval=7,
+              period_interval=1, trend_interval=7, use_mask=False,
               len_test=None, preprocess_name=None,
               meta_data=False, weather_data=False, holiday_data=False,
               weather_data_filename=None, holiday_data_filename=None):
@@ -221,11 +223,13 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     f = h5py.File(flow_data_path, 'r')
     data = f['data'].value
     timestamps = f['date'].value
+    if use_mask:
+        mask = f['mask'].value
     f.close()
 
     # minmax_scale
     data_train = copy(data)[:-len_test]
-    print('train_data shape: ', data_train.shape)
+    logging.info('train_data shape: ', data_train.shape)
     mmn = MinMaxNormalization()
     mmn.fit(data_train)
     data_mmn = [mmn.transform(d) for d in data]
@@ -246,7 +250,14 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         PeriodInterval=period_interval,
         TrendInterval=trend_interval
     )
+    logging.info("XC shape: ", XC.shape, "XP shape: ", XP.shape,
+                 "XT shape: ", XT.shape, "Y shape:", Y.shape)
 
+    XC_train, XP_train, XT_train, Y_train = XC[:-len_test], XP[:-len_test], XT[:-len_test], Y[:-len_test]
+    XC_test, XP_test, XT_test, Y_test = XC[-len_test:], XP[-len_test:], XT[-len_test:], Y[-len_test:]
+    timestamp_train, timestamp_test = timestamps_Y[:-len_test], timestamps_Y[-len_test:]
+
+    # Prepare the external component
     meta_feature = []
     if meta_data:
         # load time feature
@@ -262,22 +273,15 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         weather_data_path = os.path.join(datapath, weather_data_filename)
         weather_feature = load_weather(timestamps_Y, weather_data_path)
         meta_feature.append(weather_feature)
-
     meta_feature = np.hstack(meta_feature) if len(meta_feature) > 0 else np.asarray(meta_feature)
     metadata_dim = meta_feature.shape[1] if len(meta_feature.shape) > 1 else None
     if metadata_dim < 1:
         metadata_dim = None
     if meta_data and holiday_data and weather_data:
-        print('time feature:', time_feature.shape, 'holiday feature:', holiday_feature.shape,
-              'weather feature: ', weather_feature.shape, 'meta feature: ', meta_feature.shape)
+        logging.info('time feature:', time_feature.shape, 'holiday feature:', holiday_feature.shape,
+                      'weather feature: ', weather_feature.shape, 'meta feature: ', meta_feature.shape)
 
-    print("XC shape: ", XC.shape, "XP shape: ", XP.shape,
-          "XT shape: ", XT.shape, "Y shape:", Y.shape)
-
-    XC_train, XP_train, XT_train, Y_train = XC[:-len_test], XP[:-len_test], XT[:-len_test], Y[:-len_test]
-    XC_test, XP_test, XT_test, Y_test = XC[-len_test:], XP[-len_test:], XT[-len_test:], Y[-len_test:]
-    timestamp_train, timestamp_test = timestamps_Y[:-len_test], timestamps_Y[-len_test:]
-
+    # Combining the datasets
     X_train = []
     X_test = []
     for l, X_ in zip([len_closeness, len_period, len_trend], [XC_train, XP_train, XT_train]):
@@ -286,18 +290,25 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     for l, X_ in zip([len_closeness, len_period, len_trend], [XC_test, XP_test, XT_test]):
         if l > 0:
             X_test.append(X_)
-    print('train shape:', XC_train.shape, Y_train.shape,
-          'test shape: ', XC_test.shape, Y_test.shape)
-
+    logging.info('train shape:', XC_train.shape, Y_train.shape,
+                 'test shape: ', XC_test.shape, Y_test.shape)
     if metadata_dim is not None:
         meta_feature_train, meta_feature_test = meta_feature[:-len_test], meta_feature[-len_test:]
         X_train.append(meta_feature_train)
         X_test.append(meta_feature_test)
     type_map = {0: 'closeness', 1: 'period', 2: 'trend', 3: 'meta'}
     for i, _X in enumerate(X_train):
-        print('X train shape for %s' % type_map[i], _X.shape, )
-    print()
+        logging.info('X train shape for %s' % type_map[i], _X.shape, '\n')
     for _X in X_test:
-        print('X test shape', _X.shape, )
-    print()
+        logging.info('X test shape', _X.shape, '\n')
+
+    # Apply mask on Y_train and Y_test
+    if use_mask:
+        len_train = Y_train.shape[0]
+        len_test = Y_test.shape[0]
+        train_mask = np.tile(mask, [len_train, 1, 1, 1])
+        test_mask = np.tile(mask, [len_test, 1, 1, 1])
+        Y_train[~train_mask] = np.nan
+        Y_test[~test_mask] = np.nan
+
     return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test
