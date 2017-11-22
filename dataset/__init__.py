@@ -319,7 +319,7 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         test_mask = np.tile(mask, [len_test, 1, 1, 1])
         Y_train[~train_mask] = 2
         Y_test[~test_mask] = 2
-        logging.info('Y valid inflow cells: %i', np.sum(np.where(Y_train[0][0] != 2)))
-        logging.info('Y valid outflow cells: %i', np.sum(np.where(Y_train[0][1] != 2)))
+        logging.info('Y valid inflow cells: %i', np.sum(Y_train[0][0] != 2))
+        logging.info('Y valid outflow cells: %i', np.sum(Y_train[0][1] != 2))
 
     return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test
