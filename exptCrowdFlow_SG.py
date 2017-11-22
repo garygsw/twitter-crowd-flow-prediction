@@ -168,7 +168,7 @@ def build_model(external_dim):
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit)
     adam = Adam(lr=lr)
-    model.compile(loss='rmse', optimizer=adam, metrics=[loss_function])
+    model.compile(loss='mse', optimizer=adam, metrics=[loss_function])
     model.summary()
     if model_plot:
         from keras.utils import plot_model

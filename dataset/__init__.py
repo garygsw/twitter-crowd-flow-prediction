@@ -105,7 +105,7 @@ class STMatrix(object):
         XP = np.asarray(XP)
         XT = np.asarray(XT)
         Y = np.asarray(Y)
-        logging.info("XC shape: ", XC.shape, "XP shape: ", XP.shape, "XT shape: ", XT.shape, "Y shape:", Y.shape)
+        logging.info("XC shape: " + str(XC.shape) + " XP shape: " + str(XP.shape) + " XT shape: " + str(XT.shape) + " Y shape: ", str(Y.shape))
         return XC, XP, XT, Y, timestamps_Y
 
 
@@ -135,7 +135,7 @@ def stat(fname):
                '# of timeslots (available): %i\n' % f['date'].shape[0] + \
                'missing ratio of timeslots: %.1f%%\n' % ((1. - float(f['date'].shape[0] / nb_timeslot)) * 100) + \
                'max: %.3f, min: %.3f\n' % (mmax, mmin) + \
-               '# of valid cells: %i' % sum(single_mask) + \
+               '# of valid cells: %i\n' % np.sum(single_mask) + \
                '=' * 5 + 'stat' + '=' * 5
         logging.info(stat)
 
@@ -148,7 +148,7 @@ def load_holiday(timeslots, datapath):
     for i, slot in enumerate(timeslots):
         if slot[:8] in holidays:
             H[i] = 1
-    logging.info("total number of holidays/weekends: ", H.sum())
+    logging.info("total number of holidays/weekends: " + str(H.sum()))
     return H[:, None]
 
 
@@ -201,12 +201,13 @@ def load_weather(timeslots, datapath):
     WS = 1. * (WS - WS.min()) / (WS.max() - WS.min())
     TE = 1. * (TE - TE.min()) / (TE.max() - TE.min())
 
-    logging.info("weather shape (windspeed, weather, temperature): ", WS.shape, WR.shape, TE.shape)
+    logging.info("weather shape (windspeed, weather, temperature): " +
+                str(WS.shape) + str(WR.shape) + str(TE.shape))
 
     # concatenate all these attributes
     merge_data = np.hstack([WR, WS[:, None], TE[:, None]])
 
-    logging.info('meger shape:', merge_data.shape)
+    logging.info('meger shape: ' + str(merge_data.shape))
     return merge_data
 
 
@@ -229,7 +230,7 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
 
     # minmax_scale
     data_train = copy(data)[:-len_test]
-    logging.info('train_data shape: ', data_train.shape)
+    logging.info('train_data shape: ' + str(data_train.shape))
     mmn = MinMaxNormalization()
     mmn.fit(data_train)
     data_mmn = [mmn.transform(d) for d in data]
@@ -250,8 +251,8 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         PeriodInterval=period_interval,
         TrendInterval=trend_interval
     )
-    logging.info("XC shape: ", XC.shape, "XP shape: ", XP.shape,
-                 "XT shape: ", XT.shape, "Y shape:", Y.shape)
+    logging.info("XC shape: " + str(XC.shape) + " XP shape: " + str(XP.shape) +
+                 " XT shape: " + str(XT.shape) + " Y shape: " + str(Y.shape))
 
     XC_train, XP_train, XT_train, Y_train = XC[:-len_test], XP[:-len_test], XT[:-len_test], Y[:-len_test]
     XC_test, XP_test, XT_test, Y_test = XC[-len_test:], XP[-len_test:], XT[-len_test:], Y[-len_test:]
@@ -278,8 +279,8 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     if metadata_dim < 1:
         metadata_dim = None
     if meta_data and holiday_data and weather_data:
-        logging.info('time feature:', time_feature.shape, 'holiday feature:', holiday_feature.shape,
-                      'weather feature: ', weather_feature.shape, 'meta feature: ', meta_feature.shape)
+        logging.info('time feature: ' + str(time_feature.shape) + ' holiday feature: ' + str(holiday_feature.shape) +
+                      ' weather feature: ' + str(weather_feature.shape) + ' meta feature: ' + str(meta_feature.shape))
 
     # Combining the datasets
     X_train = []
@@ -290,17 +291,17 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     for l, X_ in zip([len_closeness, len_period, len_trend], [XC_test, XP_test, XT_test]):
         if l > 0:
             X_test.append(X_)
-    logging.info('train shape:', XC_train.shape, Y_train.shape,
-                 'test shape: ', XC_test.shape, Y_test.shape)
+    logging.info('train shape: ' + str(XC_train.shape) + ' '  + str(Y_train.shape) +
+                 ' test shape: ' + str(XC_test.shape) + ' ' + str(Y_test.shape))
     if metadata_dim is not None:
         meta_feature_train, meta_feature_test = meta_feature[:-len_test], meta_feature[-len_test:]
         X_train.append(meta_feature_train)
         X_test.append(meta_feature_test)
     type_map = {0: 'closeness', 1: 'period', 2: 'trend', 3: 'meta'}
     for i, _X in enumerate(X_train):
-        logging.info('X train shape for %s' % type_map[i], _X.shape, '\n')
+        logging.info('X train shape for %s' % type_map[i] + ' ' + str(_X.shape) + '\n')
     for _X in X_test:
-        logging.info('X test shape', _X.shape, '\n')
+        logging.info('X test shape: ' + str(_X.shape) + '\n')
 
     # Apply mask on Y_train and Y_test
     if use_mask:
