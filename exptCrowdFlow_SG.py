@@ -178,6 +178,7 @@ def build_model(external_dim):
 
 def read_cache(cache_fpath, preprocess_fpath):
     '''Read the prepared dataset (train and test set prepared).'''
+    logging.info('reading %s...' % cache_fpath)
     mmn = pickle.load(open(preprocess_fpath, 'rb'))
     f = h5py.File(cache_fpath, 'r')
     num = int(f['num'].value)
@@ -230,10 +231,7 @@ def main():
     '''main function.'''
     # load data
     print_header('loading data...')
-    logging.info('testing...')
     ts = time.time()
-    time.sleep(5)
-    print_elasped(ts, 'testing')
     cache_exists = os.path.exists(cache_fpath)
     preprocess_exists = os.path.exists(preprocess_fpath)
     if CACHEDATA and cache_exists and preprocess_exists:

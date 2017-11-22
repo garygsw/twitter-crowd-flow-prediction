@@ -18,7 +18,7 @@ mse = MSE = mean_squared_error
 # rmse = RMSE = root_mean_square_error
 
 def masked_mean_squared_error(y_true, y_pred):
-    idx = ~np.isnan(y_true)
+    idx = ~np.isnan(y_true)   # get valid index
     return K.mean(K.square(y_pred[idx] - y_true[idx]))
 
 
