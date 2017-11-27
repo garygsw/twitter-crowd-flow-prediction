@@ -281,9 +281,9 @@ def main():
     print_header("training model (development)...")
     ts = time.time()
     # Define callbacks
-    early_stopping = EarlyStopping(monitor='rmse', patience=2, mode='min')
+    early_stopping = EarlyStopping(monitor='val_loss', patience=2, mode='min')
     model_checkpoint = ModelCheckpoint(dev_checkpoint_fpath,
-                                       monitor='rmse',
+                                       monitor='val_loss',
                                        verbose=checkpoint_verbose,
                                        save_best_only=True,
                                        mode='min')
