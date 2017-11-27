@@ -10,7 +10,7 @@ import cPickle as pickle
 import time
 import numpy as np
 import h5py
-
+import warnings
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
@@ -20,18 +20,21 @@ from dataset import load_data
 
 # Input parameters
 np.random.seed(1337)  # for reproducibility
-ds_name = 'set1'  # dataset name
+city_name = 'SG'
+ds_name = 'VDLset1'  # dataset name
 map_height, map_width = 46, 87  # (23, 44) - 1km, (46, 87) - 500m
 use_meta = True
 use_weather = True
 use_holidays = True
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
-flow_data_fname = 'SG_{}_M{}x{}_T{}_InOut.h5'.format(
-    ds_name, map_width, map_height, len_interval
+flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(
+    city_name, ds_name, map_width, map_height, len_interval
 )
-weather_data_fname = 'SG_{}_T{}_Weather.h5'.format(ds_name, len_interval)
-holiday_data_fname = 'SG_{}_Holidays.txt'.format(ds_name)
+weather_data_fname = '{}_{}_T{}_Weather.h5'.format(
+    city_name, ds_name, len_interval
+)
+holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
 path_preprocess = os.path.join(DATAPATH, 'PREPROCESS')
@@ -63,12 +66,7 @@ full_evaluate_verbose = True
 model_plot = False
 model_fpath = 'model.png'
 use_mask = True
-
-# use masked rmse if use_mask
-if use_mask:
-    loss_function = metrics.masked_rmse
-else:
-    loss_function = metrics.rmse
+warnings.filterwarnings('ignore')
 
 # Make the folders and the respective paths if it does not already exists
 if not os.path.isdir(path_result):
@@ -97,23 +95,27 @@ if CACHEDATA:
     if use_meta and use_holidays:
         meta_info.append('H')
     if len(meta_info) > 1:
-        meta_info = '_' + '_'.join(meta_info)
+        meta_info = '_E' + '.'.join(meta_info)
     else:
         meta_info = ''
-    cache_fname = 'SG_{}_M{}x{}_T{}_C{}_P{}_T{}{}.h5'.format(ds_name,
-                                                             map_width,
-                                                             map_height,
-                                                             len_interval,
-                                                             len_closeness,
-                                                             len_period,
-                                                             len_trend,
-                                                             meta_info)
+    mask_info = '_masked' if use_mask else ''
+    cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}.h5'.format(city_name,
+                                                               ds_name,
+                                                               map_width,
+                                                               map_height,
+                                                               len_interval,
+                                                               len_closeness,
+                                                               len_period,
+                                                               len_trend,
+                                                               meta_info,
+                                                               mask_info)
     cache_fpath = os.path.join(path_cache, cache_fname)
-    preprocess_fname = 'SG_Preprocess_{}'.format(ds_name)
+    preprocess_fname = '{}_Preprocess_{}'.format(city_name, ds_name)
     preprocess_fpath = os.path.join(path_preprocess, preprocess_fname)
 
 # Define the file paths of the result and model files
-hyperparams_name = 'SG_{}_M{}x{}_T{}_c{}.p{}.t{}.resunit{}.lr{}'.format(
+hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}'.format(
+    city_name,
     ds_name,
     map_width,
     map_height,
@@ -121,6 +123,8 @@ hyperparams_name = 'SG_{}_M{}x{}_T{}_c{}.p{}.t{}.resunit{}.lr{}'.format(
     len_closeness,
     len_period,
     len_trend,
+    meta_info,
+    mask_info,
     nb_residual_unit,
     lr
 )
@@ -152,7 +156,7 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 root_logger.addHandler(consoleHandler)
 
 
-def build_model(external_dim):
+def build_model(external_dim, loss_function):
     '''Define the model configuration and optimizer, and compiles it.'''
     c_conf, p_conf, t_conf = None, None, None
     if len_closeness > 0:
@@ -168,11 +172,12 @@ def build_model(external_dim):
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit)
     adam = Adam(lr=lr)
-    model.compile(loss='mse', optimizer=adam, metrics=[loss_function])
+    model.compile(loss=loss_function, optimizer=adam, metrics=[loss_function])
     model.summary()
     if model_plot:
         from keras.utils import plot_model
         plot_model(model, to_file=model_fpath, show_shapes=True)
+        logging.info('Model plotted in %s' % model_fpath)
     return model
 
 
@@ -191,13 +196,14 @@ def read_cache(cache_fpath, preprocess_fpath):
     external_dim = f['external_dim'].value
     timestamp_train = f['T_train'].value
     timestamp_test = f['T_test'].value
+    mask = f['mask'].value
     f.close()
     return X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
-        timestamp_test
+        timestamp_test, mask
 
 
 def cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
-          timestamp_train, timestamp_test):
+          timestamp_train, timestamp_test, mask):
     '''Create cache file for the prepared dataset.'''
     h5 = h5py.File(cache_fpath, 'w')
     h5.create_dataset('num', data=len(X_train))
@@ -211,6 +217,7 @@ def cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
     h5.create_dataset('external_dim', data=external_dim)
     h5.create_dataset('T_train', data=timestamp_train)
     h5.create_dataset('T_test', data=timestamp_test)
+    h5.create_dataset('mask', data=mask)
     h5.close()
 
 
@@ -236,11 +243,11 @@ def main():
     preprocess_exists = os.path.exists(preprocess_fpath)
     if CACHEDATA and cache_exists and preprocess_exists:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
-            timestamp_test = read_cache(cache_fpath, preprocess_fpath)
-        logging.info('load %s successfully' % cache_fpath)
+            timestamp_test, mask = read_cache(cache_fpath, preprocess_fpath)
+        logging.info('loaded %s successfully' % cache_fpath)
     else:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
-            timestamp_test = load_data(
+            timestamp_test, mask = load_data(
                 datapath=DATAPATH,
                 flow_data_filename=flow_data_fname,
                 T=T,
@@ -261,12 +268,18 @@ def main():
             )
         if CACHEDATA:
             cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
-                  timestamp_train, timestamp_test)
+                  timestamp_train, timestamp_test, mask)
     print_elasped(ts, 'loading data')
 
     print_header("compiling model...")
     ts = time.time()
-    model = build_model(external_dim)
+    # use masked rmse if use_mask
+    loss_function = metrics.masked_rmse(mask) if use_mask else metrics.rmse
+    model = build_model(external_dim, loss_function)
+    print_elasped(ts, 'model compilation')
+
+    print_header("training model (development)...")
+    ts = time.time()
     # Define callbacks
     early_stopping = EarlyStopping(monitor='rmse', patience=2, mode='min')
     model_checkpoint = ModelCheckpoint(dev_checkpoint_fpath,
@@ -274,10 +287,6 @@ def main():
                                        verbose=checkpoint_verbose,
                                        save_best_only=True,
                                        mode='min')
-    print_elasped(ts, 'model compilation')
-
-    print_header("training model (development)...")
-    ts = time.time()
     history = model.fit(X_train,
                         Y_train,
                         epochs=nb_epoch,
@@ -342,8 +351,8 @@ def main():
     # saves the prediction results
     if save_predictions:
         predictions = model.predict(X_test)
-        logging.info('Predictions shape: ', predictions.shape)
-        logging.info('Test shape: ', Y_test.shape)
+        logging.info('Predictions shape: ' + str(predictions.shape))
+        logging.info('Test shape: ' + str(Y_test.shape))
         np.save(predictions_fpath, predictions)
         np.save(true_y_fpath, Y_test)
         np.save(timestamps_fpath, timestamp_test)

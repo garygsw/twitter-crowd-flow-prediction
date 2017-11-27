@@ -128,15 +128,20 @@ def stat(fname):
         mmax = f['data'].value.max()
         mmin = f['data'].value.min()
         single_mask = f['mask'].value
+        if single_mask is not None:
+            inflow_cells = np.sum(single_mask[0])
+            outflow_cells = np.sum(single_mask[1])
+            mask_info = '# of valid inflow cells: %i\n' % inflow_cells + \
+                        '# of valid outflow cells: %i\n' % outflow_cells
+        else:
+            mask_info = ''
         stat = '=' * 5 + 'stat' + '=' * 5 + '\n' + \
                'data shape: %s\n' % str(f['data'].shape) + \
                '# of days: %i, from %s to %s\n' % (nb_day, ts_str, te_str) + \
                '# of timeslots: %i\n' % int(nb_timeslot) + \
                '# of timeslots (available): %i\n' % f['date'].shape[0] + \
                'missing ratio of timeslots: %.1f%%\n' % ((1. - float(f['date'].shape[0] / nb_timeslot)) * 100) + \
-               'max: %.3f, min: %.3f\n' % (mmax, mmin) + \
-               '# of valid inflow cells: %i\n' % np.sum(single_mask[0]) + \
-               '# of valid outflow cells: %i\n' % np.sum(single_mask[1]) + \
+               'max: %.3f, min: %.3f\n' % (mmax, mmin) + mask_info + \
                '=' * 5 + 'stat' + '=' * 5 + '\n'
         logging.info(stat)
 
@@ -226,8 +231,7 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     f = h5py.File(flow_data_path, 'r')
     data = f['data'].value
     timestamps = f['date'].value
-    if use_mask:
-        mask = f['mask'].value
+    mask = f['mask'].value if use_mask else None
     f.close()
 
     # minmax_scale
@@ -312,14 +316,14 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         logging.info('X test shape for %s ' % type_map[i] + ': ' + str(_X.shape))
 
     # Apply mask on Y_train and Y_test
-    if use_mask:
-        len_train = Y_train.shape[0]
-        len_test = Y_test.shape[0]
-        train_mask = np.tile(mask, [len_train, 1, 1, 1])
-        test_mask = np.tile(mask, [len_test, 1, 1, 1])
-        Y_train[~train_mask] = 2
-        Y_test[~test_mask] = 2
-        logging.info('Y valid inflow cells: %i', np.sum(Y_train[0][0] != 2))
-        logging.info('Y valid outflow cells: %i', np.sum(Y_train[0][1] != 2))
+    # if use_mask:
+    #     len_train = Y_train.shape[0]
+    #     len_test = Y_test.shape[0]
+    #     train_mask = np.tile(mask, [len_train, 1, 1, 1])
+    #     test_mask = np.tile(mask, [len_test, 1, 1, 1])
+    #     Y_train[~train_mask] = 2
+    #     Y_test[~test_mask] = 2
+    #     logging.info('Y valid inflow cells: %i', np.sum(Y_train[0][0] != 2))
+    #     logging.info('Y valid outflow cells: %i', np.sum(Y_train[0][1] != 2))
 
-    return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test
+    return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test, mask
