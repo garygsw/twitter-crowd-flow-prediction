@@ -24,11 +24,15 @@ mse = MSE = mean_squared_error
 
 def masked_rmse(mask):
     def masked_rmse(y_true, y_pred):
-        size = K.int_shape(y_true)[0]  # get len of timeslots
-        if size is not None:
-            idx = np.tile(mask, [size, 1, 1, 1])
-        else:
-            idx = y_true
-        idx = idx.nonzero()  # to make it a tensor variable
+        idx = K.tile(mask, [y_true.shape[0], 1, 1, 1])
+        idx = idx.nonzero()  # to make it a tensor mask
         return K.mean(K.square(y_pred[idx] - y_true[idx])) ** 0.5
     return masked_rmse
+
+
+def masked_mse(mask):
+    def masked_mse(y_true, y_pred):
+        idx = K.tile(mask, [y_true.shape[0], 1, 1, 1])
+        idx = idx.nonzero()  # to make it a tensor mask
+        return K.mean(K.square(y_pred[idx] - y_true[idx]))
+    return masked_mse

@@ -53,10 +53,10 @@ nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
 validation_split = 0.1
-path_result = 'RET'                 # result path
+path_result = 'HIST'                # history path
 path_model = 'MODEL'                # model path
 path_log = 'LOG'                    # log path
-path_predictions = 'PREDICTIONS'    # predictions path
+path_predictions = 'PRED'           # predictions path
 save_predictions = True
 checkpoint_verbose = True
 development_training_verbose = True
@@ -156,7 +156,7 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 root_logger.addHandler(consoleHandler)
 
 
-def build_model(external_dim, loss_function):
+def build_model(external_dim, loss, metric):
     '''Define the model configuration and optimizer, and compiles it.'''
     c_conf, p_conf, t_conf = None, None, None
     if len_closeness > 0:
@@ -172,7 +172,7 @@ def build_model(external_dim, loss_function):
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit)
     adam = Adam(lr=lr)
-    model.compile(loss=loss_function, optimizer=adam, metrics=[loss_function])
+    model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()
     if model_plot:
         from keras.utils import plot_model
@@ -274,8 +274,9 @@ def main():
     print_header("compiling model...")
     ts = time.time()
     # use masked rmse if use_mask
-    loss_function = metrics.masked_rmse(mask) if use_mask else metrics.rmse
-    model = build_model(external_dim, loss_function)
+    loss_function = metrics.masked_mse(mask) if use_mask else metrics.rmse
+    metric_function = metrics.masked_rmse(mask) if use_mask else metrics.mse
+    model = build_model(external_dim, loss_function, metric_function)
     print_elasped(ts, 'model compilation')
 
     print_header("training model (development)...")
