@@ -1,0 +1,45 @@
+==========
+loading data...
+
+reading dataset/CACHE/SG_VDLset1_M87x46_T30_c4.p1.t1_EW.H_masked.h5...
+loaded dataset/CACHE/SG_VDLset1_M87x46_T30_c4.p1.t1_EW.H_masked.h5 successfully
+
+elapsed time (loading data): 1.593 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.377 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5808.399 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001445 rmse (norm): 0.037903 rmse (real): 3157.854458
+Test score: 0.001304 rmse (norm): 0.036117 rmse (real): 3009.067200
+
+elapsed time (development evaluation): 79.739 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22297.342 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001011 rmse (norm): 0.031698 rmse (real): 2640.862883
+Test score: 0.000973 rmse (norm): 0.031188 rmse (real): 2598.405332
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+
+elapsed time (full evaluation): 100.434 seconds
+
+Total training time (s): 28105.741359
