@@ -59,7 +59,6 @@ path_result = 'HIST'                # history path
 path_model = 'MODEL'                # model path
 path_log = 'LOG'                    # log path
 path_predictions = 'PRED'           # predictions path
-save_predictions = True
 checkpoint_verbose = True
 development_training_verbose = True
 development_evaluate_verbose = True
@@ -73,16 +72,24 @@ warnings.filterwarnings('ignore')
 # Make the folders and the respective paths if it does not already exists
 if not os.path.isdir(path_result):
     os.mkdir(path_result)
+path_results = os.path.join(path_result, ds_name)
+if not os.path.isdir(path_result):
+    os.mkdir(path_result)
+if not os.path.isdir(path_model):
+    os.mkdir(path_model)
+path_model = os.path.join(path_model, ds_name)
 if not os.path.isdir(path_model):
     os.mkdir(path_model)
 if not os.path.isdir(path_log):
     os.mkdir(path_log)
-if save_predictions:
-    if not os.path.isdir(path_predictions):
-        os.mkdir(path_predictions)
-    path_predictions = os.path.join(path_predictions, ds_name)
-    if not os.path.isdir(path_predictions):
-        os.mkdir(path_predictions)
+path_log = os.path.join(path_log, ds_name)
+if not os.path.isdir(path_log):
+    os.mkdir(path_log)
+if not os.path.isdir(path_predictions):
+    os.mkdir(path_predictions)
+path_predictions = os.path.join(path_predictions, ds_name)
+if not os.path.isdir(path_predictions):
+    os.mkdir(path_predictions)
 if CACHEDATA:
     if not os.path.isdir(path_cache):
         os.mkdir(path_cache)
@@ -353,15 +360,15 @@ def main():
                            verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
-    # saves the prediction results
-    if save_predictions:
-        predictions = model.predict(X_test)
-        logging.info('Predictions shape: ' + str(predictions.shape))
-        logging.info('Test shape: ' + str(Y_test.shape))
-        np.save(predictions_fpath, predictions)
-        np.save(test_true_y_fpath, Y_test)
-        np.save(pred_timestamps_fpath, timestamp_test)
     print_elasped(ts, 'full evaluation')
+
+    # saves the prediction results
+    predictions = model.predict(X_test)
+    logging.info('Predictions shape: ' + str(predictions.shape))
+    logging.info('Test shape: ' + str(Y_test.shape))
+    np.save(predictions_fpath, predictions)
+    np.save(test_true_y_fpath, Y_test)
+    np.save(pred_timestamps_fpath, timestamp_test)
 
     # log the total training time
     hours = total_training_time // 3600
