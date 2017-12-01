@@ -28,12 +28,14 @@ use_weather = True
 use_holidays = True
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
-flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(
-    city_name, ds_name, map_width, map_height, len_interval
-)
-weather_data_fname = '{}_{}_T{}_Weather.h5'.format(
-    city_name, ds_name, len_interval
-)
+flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
+                                                     ds_name,
+                                                     map_width,
+                                                     map_height,
+                                                     len_interval)
+weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
+                                                   ds_name,
+                                                   len_interval)
 holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
@@ -52,7 +54,7 @@ trend_interval = 7           # period interval length (in days)
 nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
-validation_split = 0.1
+validation_split = 0.1              # during development training phase
 path_result = 'HIST'                # history path
 path_model = 'MODEL'                # model path
 path_log = 'LOG'                    # log path
@@ -81,8 +83,6 @@ if save_predictions:
     path_predictions = os.path.join(path_predictions, ds_name)
     if not os.path.isdir(path_predictions):
         os.mkdir(path_predictions)
-    true_y_fpath = os.path.join(path_predictions, 'true_y.npy')
-    timestamps_fpath = os.path.join(path_predictions, 'timestamps.npy')
 if CACHEDATA:
     if not os.path.isdir(path_cache):
         os.mkdir(path_cache)
@@ -142,6 +142,10 @@ full_history_fname = '{}.full.history.pkl'.format(hyperparams_name)
 full_history_fpath = os.path.join(path_result, full_history_fname)
 predictions_fname = '{}.stressnet.predictions.npy'.format(hyperparams_name)
 predictions_fpath = os.path.join(path_predictions, predictions_fname)
+pred_timestamps_fname = 'timestamps_T{}_{}.npy'.format(len_interval, len_test)
+pred_timestamps_fpath = os.path.join(path_predictions, pred_timestamps_fname)
+test_true_y_fname = 'true_y_T{}_{}.npy'.format(len_interval, len_test)
+test_true_y_fpath = os.path.join(path_predictions, test_true_y_fname)
 
 # Define logging parameters
 local_time = time.localtime()
@@ -355,11 +359,19 @@ def main():
         logging.info('Predictions shape: ' + str(predictions.shape))
         logging.info('Test shape: ' + str(Y_test.shape))
         np.save(predictions_fpath, predictions)
-        np.save(true_y_fpath, Y_test)
-        np.save(timestamps_fpath, timestamp_test)
+        np.save(test_true_y_fpath, Y_test)
+        np.save(pred_timestamps_fpath, timestamp_test)
     print_elasped(ts, 'full evaluation')
 
-    logging.info('Total training time (s): %.6f' % total_training_time)
+    # log the total training time
+    hours = total_training_time // 3600
+    total_training_time %= 3600
+    minutes = total_training_time // 60
+    total_training_time %= 60
+    seconds = total_training_time
+    logging.info('Total training time: %d hrs %d mins %.6f s' % (hours,
+                                                                 minutes,
+                                                                 seconds))
 
 if __name__ == '__main__':
     main()
