@@ -39,7 +39,7 @@ weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
 holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
-path_preprocess = os.path.join(DATAPATH, 'PREPROCESS')
+path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
 batch_size = 32              # batch size
@@ -93,8 +93,8 @@ if not os.path.isdir(path_predictions):
 if CACHEDATA:
     if not os.path.isdir(path_cache):
         os.mkdir(path_cache)
-    if not os.path.isdir(path_preprocess):
-        os.mkdir(path_preprocess)
+    if not os.path.isdir(path_norm):
+        os.mkdir(path_norm)
     # Define filename of the cache data file based on meta, c, p & t parameters
     meta_info = []
     if use_meta and use_weather:
@@ -117,8 +117,8 @@ if CACHEDATA:
                                                                meta_info,
                                                                mask_info)
     cache_fpath = os.path.join(path_cache, cache_fname)
-    preprocess_fname = '{}_Preprocess_{}'.format(city_name, ds_name)
-    preprocess_fpath = os.path.join(path_preprocess, preprocess_fname)
+    norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
+    norm_fpath = os.path.join(path_norm, norm_fname)
 
 # Define the file paths of the result and model files
 hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}'.format(
@@ -192,10 +192,10 @@ def build_model(external_dim, loss, metric):
     return model
 
 
-def read_cache(cache_fpath, preprocess_fpath):
+def read_cache(cache_fpath, norm_fpath):
     '''Read the prepared dataset (train and test set prepared).'''
     logging.info('reading %s...' % cache_fpath)
-    mmn = pickle.load(open(preprocess_fpath, 'rb'))
+    mmn = pickle.load(open(norm_fpath, 'rb'))
     f = h5py.File(cache_fpath, 'r')
     num = int(f['num'].value)
     X_train, Y_train, X_test, Y_test = [], [], [], []
@@ -251,10 +251,10 @@ def main():
     print_header('loading data...')
     ts = time.time()
     cache_exists = os.path.exists(cache_fpath)
-    preprocess_exists = os.path.exists(preprocess_fpath)
-    if CACHEDATA and cache_exists and preprocess_exists:
+    norm_exists = os.path.exists(norm_fpath)
+    if CACHEDATA and cache_exists and norm_exists:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
-            timestamp_test, mask = read_cache(cache_fpath, preprocess_fpath)
+            timestamp_test, mask = read_cache(cache_fpath, norm_fpath)
         logging.info('loaded %s successfully' % cache_fpath)
     else:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
@@ -269,7 +269,7 @@ def main():
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
-                preprocess_name=preprocess_fpath,
+                norm_name=norm_fpath,
                 meta_data=use_meta,
                 weather_data=use_weather,
                 holiday_data=use_holidays,
