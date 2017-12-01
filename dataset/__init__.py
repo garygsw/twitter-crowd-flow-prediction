@@ -221,7 +221,7 @@ def load_weather(timeslots, datapath):
 def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
               len_closeness=None, len_period=None, len_trend=None,
               period_interval=1, trend_interval=7, use_mask=False,
-              len_test=None, preprocess_name=None,
+              len_test=None, norm_name=None,
               meta_data=False, weather_data=False, holiday_data=False,
               weather_data_filename=None, holiday_data_filename=None):
     assert(len_closeness + len_period + len_trend > 0)
@@ -242,7 +242,7 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
     data_mmn = [mmn.transform(d) for d in data]
 
     # save preprocessing stats
-    fpkl = open(preprocess_name, 'wb')
+    fpkl = open(norm_name, 'wb')
     for obj in [mmn]:
         pickle.dump(obj, fpkl)
     fpkl.close()
