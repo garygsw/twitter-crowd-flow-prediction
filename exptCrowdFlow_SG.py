@@ -95,7 +95,7 @@ if CACHEDATA:
     if use_meta and use_holidays:
         meta_info.append('H')
     if len(meta_info) > 1:
-        meta_info = '_E' + '.'.join(meta_info)
+        meta_info = '_Ext.' + '.'.join(meta_info)
     else:
         meta_info = ''
     mask_info = '_masked' if use_mask else ''
