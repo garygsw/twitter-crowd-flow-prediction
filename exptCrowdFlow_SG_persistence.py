@@ -1,75 +1,104 @@
-# -*- coding: utf-8 -*-
-"""
-Usage:
-    THEANO_FLAGS="device=gpu0" python exptCrowdFlow.py
-"""
-from __future__ import print_function
-import os
+'''exptCrowdFlow_SG.py.
+
+Crowd Flow Prediction experiment on the Singapore city.
+'''
+
+import logging
 import sys
+import os
 import cPickle as pickle
 import time
 import numpy as np
 import h5py
-
-from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-
-from deepst.models.STResNet import stresnet
-from deepst.config import Config
-import deepst.metrics as metrics
-
+import warnings
+from datetime import datetime
 from dataset import load_data
 
-
-np.random.seed(1337)  # for reproducibility
-
-# parameters
-cv_set_dirs = ['cv_set_1', 'cv_set_2', 'cv_set_3', 'cv_set_4']                # CHANGE: name
-map_height, map_width = 46, 87          # CHANGE: grid size (23, 44) - 1km, (46, 87) - 500m
-use_meta = True
-use_weather = True
-use_holidays = True
-len_timeslot = 30       # 30 minutes per time slot
+# Input parameters
+baseline_model = 'persistence'
+city_name = 'SG'
+ds_name = 'VDLset1'  # dataset name
+map_height, map_width = 46, 87  # (23, 44) - 1km, (46, 87) - 500m
+len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
-
+flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
+                                                     ds_name,
+                                                     map_width,
+                                                     map_height,
+                                                     len_interval)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
-path_preprocess = os.path.join(DATAPATH, 'PREPROCESS')
-nb_epoch = 500          # number of epoch at training stage
-nb_epoch_cont = 100     # number of epoch at training (cont) stage
-batch_size = 32         # batch size
-T = 48                  # number of time intervals in one day
-lr = 0.0002             # learning rate
-len_closeness = 4       # length of closeness dependent sequence
-len_period = 1          # length of peroid dependent sequence
-len_trend = 1           # length of trend dependent sequence
-nb_residual_unit = 2    # number of residual units
-period_interval = 1     # period interval length (in days)
-trend_interval = 7      # period interval length (in days)
-
-nb_flow = 2             # there are two types of flows: inflow and outflow
-days_test = 7 * 4       # number of days from the back as test set
+path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
+T = 24 * 60 / len_interval   # number of time intervals in one day
+period_interval = 1          # period interval length (in days)
+trend_interval = 7           # period interval length (in days)
+nb_flow = 2                  # there are two types of flows: inflow and outflow
+days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
-path_result = 'RET'             # result path
-path_model = 'MODEL'            # model path
+path_result = 'HIST'                # history path
+path_model = 'MODEL'                # model path
+path_log = 'LOG'                    # log path
+path_predictions = 'PRED'           # predictions path
+use_mask = True
+warnings.filterwarnings('ignore')
 
-
-# Make the folders of the respective paths if it does not already exists
+# Make the folders and the respective paths if it does not already exists
+if not os.path.isdir(path_result):
+    os.mkdir(path_result)
+path_results = os.path.join(path_result, ds_name)
 if not os.path.isdir(path_result):
     os.mkdir(path_result)
 if not os.path.isdir(path_model):
     os.mkdir(path_model)
-if CACHEDATA and not os.path.isdir(path_cache):
-    os.mkdir(path_cache)
-if CACHEDATA and not os.path.isdir(path_preprocess):
-    os.mkdir(path_preprocess)
+path_model = os.path.join(path_model, ds_name)
+if not os.path.isdir(path_model):
+    os.mkdir(path_model)
+if not os.path.isdir(path_log):
+    os.mkdir(path_log)
+path_log = os.path.join(path_log, ds_name)
+if not os.path.isdir(path_log):
+    os.mkdir(path_log)
+if not os.path.isdir(path_predictions):
+    os.mkdir(path_predictions)
+path_predictions = os.path.join(path_predictions, ds_name)
+if not os.path.isdir(path_predictions):
+    os.mkdir(path_predictions)
+if CACHEDATA:
+    if not os.path.isdir(path_cache):
+        os.mkdir(path_cache)
+    if not os.path.isdir(path_norm):
+        os.mkdir(path_norm)
+    # Define filename of the cache data file
+    mask_info = '_masked' if use_mask else ''
+    cache_fname = '{}_{}_M{}x{}_T{}_{}_{}.h5'.format(city_name,
+                                                     ds_name,
+                                                     map_width,
+                                                     map_height,
+                                                     len_interval,
+                                                     mask_info,
+                                                     baseline_model)
+    cache_fpath = os.path.join(path_cache, cache_fname)
+    norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
+    norm_fpath = os.path.join(path_norm, norm_fname)
+
+# Define logging parameters
+local_time = time.localtime()
+log_fname = time.strftime('%Y-%m-%d_%H-%M-%S_', local_time) + 'baselines'
+log_fname += '.out'
+log_fpath = os.path.join(path_log, log_fname)
+fileHandler = logging.FileHandler(log_fpath)
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+root_logger.addHandler(fileHandler)
+consoleHandler = logging.StreamHandler(sys.stdout)
+root_logger.addHandler(consoleHandler)
 
 
-def read_cache(flow_fname, preprocess_fname):
-    ''' Read the prepared dataset (train and test set prepared).
-    '''
-    mmn = pickle.load(open(preprocess_fname, 'rb'))
-    f = h5py.File(flow_fname, 'r')
+def read_cache(cache_fpath, norm_fpath):
+    '''Read the prepared dataset (train and test set prepared).'''
+    logging.info('reading %s...' % cache_fpath)
+    mmn = pickle.load(open(norm_fpath, 'rb'))
+    f = h5py.File(cache_fpath, 'r')
     num = int(f['num'].value)
     X_train, Y_train, X_test, Y_test = [], [], [], []
     for i in xrange(num):
@@ -80,14 +109,16 @@ def read_cache(flow_fname, preprocess_fname):
     external_dim = f['external_dim'].value
     timestamp_train = f['T_train'].value
     timestamp_test = f['T_test'].value
+    mask = f['mask'].value
     f.close()
-    return X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, timestamp_test
+    return X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
+        timestamp_test, mask
 
 
-def cache(flow_fname, X_train, Y_train, X_test, Y_test, external_dim, timestamp_train, timestamp_test):
-    ''' Creates cache file for the prepared dataset.
-    '''
-    h5 = h5py.File(flow_fname, 'w')
+def cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
+          timestamp_train, timestamp_test, mask):
+    '''Create cache file for the prepared dataset.'''
+    h5 = h5py.File(cache_fpath, 'w')
     h5.create_dataset('num', data=len(X_train))
     for i, data in enumerate(X_train):
         h5.create_dataset('X_train_%i' % i, data=data)
@@ -99,65 +130,75 @@ def cache(flow_fname, X_train, Y_train, X_test, Y_test, external_dim, timestamp_
     h5.create_dataset('external_dim', data=external_dim)
     h5.create_dataset('T_train', data=timestamp_train)
     h5.create_dataset('T_test', data=timestamp_test)
+    h5.create_dataset('mask', data=mask)
     h5.close()
 
 
+def print_elasped(from_ts, title):
+    '''helper function to print elasped time.'''
+    elasped_seconds = time.time() - from_ts
+    logging.info('\nelapsed time (%s): %.3f seconds\n' %
+                 (title, elasped_seconds))
+
+
+def print_header(message):
+    '''helper function to print header.'''
+    logging.info('=' * 10)
+    logging.info(message + '\n')
+
+
 def main():
+    '''main function.'''
     # load data
-    for cv_set_name in cv_set_dirs:
-        print("loading data...")
-        flow_data_filename = 'SG_{}_M{}x{}_T{}_InOut.h5'.format(cv_set_name, map_width, map_height, len_timeslot)  # map grid dependent, time dependent
-        weather_data_filename = 'SG_{}_T{}_Weather.h5'.format(cv_set_name, len_timeslot)    # map grid independent, time dependent
-        holiday_data_filename = 'SG_{}_Holidays.txt'.format(cv_set_name)                    # map grid independent, time independent
-        ts = time.time()
-        meta_info = []
-        if use_meta and use_weather:
-            meta_info.append('W')
-        if use_meta and use_holidays:
-            meta_info.append('H')
-        if len(meta_info) > 1:
-            meta_info = '_' + '_'.join(meta_info)
-        else:
-            meta_info = ''
-        # Define filename of the data file (for CACHE) based on c, p & t parameters
-        flow_fname = os.path.join(DATAPATH, 'CACHE', 'SG_{}_M{}x{}_T{}_C{}_P{}_T{}{}.h5'.format(
-            cv_set_name, map_width, map_height, len_timeslot, len_closeness, len_period, len_trend, meta_info)
-        )  # map grid dependent, time dependent, param dependent
-        preprocess_fname = os.path.join(DATAPATH, 'PREPROCESS', 'SG_Preprocess_{}'.format(cv_set_name))
-        if os.path.exists(flow_fname) and os.path.exists(preprocess_fname) and CACHEDATA:
-            X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, timestamp_test = read_cache(
-                flow_fname,
-                preprocess_fname
-            )
-            print("load %s successfully" % flow_fname)
-        else:
-            X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, timestamp_test = load_data(
+    print_header('loading data...')
+    ts = time.time()
+    cache_exists = os.path.exists(cache_fpath)
+    norm_exists = os.path.exists(norm_fpath)
+    if CACHEDATA and cache_exists and norm_exists:
+        X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
+            timestamp_test, mask = read_cache(cache_fpath, norm_fpath)
+        logging.info('loaded %s successfully' % cache_fpath)
+    else:
+        X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
+            timestamp_test, mask = load_data(
                 datapath=DATAPATH,
-                flow_data_filename=flow_data_filename,
+                flow_data_filename=flow_data_fname,
                 T=T,
                 nb_flow=nb_flow,
-                len_closeness=len_closeness,
-                len_period=len_period,
-                len_trend=len_trend,
+                len_closeness=1,
+                len_period=0,
+                len_trend=0,
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
-                preprocess_name=preprocess_fname,
-                meta_data=use_meta,
-                weather_data=use_weather,
-                holiday_data=use_holidays,
-                weather_data_filename=weather_data_filename,
-                holiday_data_filename=holiday_data_filename
+                norm_name=norm_fpath,
+                use_mask=use_mask
             )
-            if CACHEDATA:
-                cache(flow_fname, X_train, Y_train, X_test, Y_test, external_dim, timestamp_train, timestamp_test)
+        if CACHEDATA:
+            cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
+                  timestamp_train, timestamp_test, mask)
+    print_elasped(ts, 'loading data')
 
-        print("\n days (test): ", [v[:8] for v in timestamp_test[0::T]])
-        print("\nelapsed time (loading data): %.3f seconds\n" % (time.time() - ts))
+    if use_mask:
+        test_mask = np.tile(mask, [len(Y_test), 1, 1, 1])
 
-
-        predictions = np.array([[list(Y_train)[-1]] + list(Y_test)[:-1]])
-        np.save('PREDICTIONS/' + cv_set_name + '/persistence_predictions.npy', predictions)
+    # Persistence model
+    print_header("evaluating persistence model...")
+    ts = time.time()
+    predictions = np.concatenate(([Y_train[-1]], Y_test[:-1]), axis=0)
+    logging.info('Predictions shape: ' + str(predictions.shape))
+    logging.info('Test shape: ' + str(Y_test.shape))
+    predictions_fname = 'persistence_predictions.npy'
+    predictions_fpath = os.path.join(path_predictions, predictions_fname)
+    np.save(predictions_fpath, predictions)
+    if use_mask:
+        intermediate = (Y_test[test_mask] - predictions[test_mask]) ** 2
+        rmse_norm = intermediate.mean() ** 0.5
+    else:
+        rmse_norm = ((Y_test - predictions) ** 2).mean() ** 0.5
+    logging.info('rmse (norm): %.6f rmse (real): %.6f' %
+                 (rmse_norm, rmse_norm * (mmn._max - mmn._min) / 2.))
+    print_elasped(ts, 'persitence model prediction')
 
 if __name__ == '__main__':
     main()
