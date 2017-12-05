@@ -228,7 +228,8 @@ def cache(cache_fpath, X_train, Y_train, X_test, Y_test, external_dim,
     h5.create_dataset('external_dim', data=external_dim)
     h5.create_dataset('T_train', data=timestamp_train)
     h5.create_dataset('T_test', data=timestamp_test)
-    h5.create_dataset('mask', data=mask)
+    if mask is not None:
+        h5.create_dataset('mask', data=mask)
     h5.close()
 
 
