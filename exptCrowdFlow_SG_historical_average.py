@@ -185,6 +185,7 @@ def main():
     # Historical average model
     print_header("evaluating historical average model...")
     ts = time.time()
+
     def update_historical_averages(timeslots, flow_matrix):
         '''Update the historical averages.'''
         hist_seq = {i: {} for i in range(7)}

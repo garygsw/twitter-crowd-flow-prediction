@@ -55,7 +55,7 @@ nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
 validation_split = 0.1              # during development training phase
-path_result = 'HIST'                # history path
+path_hist = 'HIST'                  # history path
 path_model = 'MODEL'                # model path
 path_log = 'LOG'                    # log path
 path_predictions = 'PRED'           # predictions path
@@ -70,11 +70,11 @@ use_mask = True
 warnings.filterwarnings('ignore')
 
 # Make the folders and the respective paths if it does not already exists
-if not os.path.isdir(path_result):
-    os.mkdir(path_result)
-path_results = os.path.join(path_result, ds_name)
-if not os.path.isdir(path_result):
-    os.mkdir(path_result)
+if not os.path.isdir(path_hist):
+    os.mkdir(path_hist)
+path_hist = os.path.join(path_hist, ds_name)
+if not os.path.isdir(path_hist):
+    os.mkdir(path_hist)
 if not os.path.isdir(path_model):
     os.mkdir(path_model)
 path_model = os.path.join(path_model, ds_name)
@@ -140,13 +140,13 @@ dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
 dev_weights_fname = '{}.dev.weights.h5'.format(hyperparams_name)
 dev_weights_fpath = os.path.join(path_model, dev_weights_fname)
 dev_history_fname = '{}.dev.history.pkl'.format(hyperparams_name)
-dev_history_fpath = os.path.join(path_result, dev_history_fname)
+dev_history_fpath = os.path.join(path_hist, dev_history_fname)
 full_checkpoint_fname = '{}.full.best.h5'.format(hyperparams_name)
 full_checkpoint_fpath = os.path.join(path_model, full_checkpoint_fname)
 full_weights_fname = '{}.full.weights.h5'.format(hyperparams_name)
 full_weights_fpath = os.path.join(path_model, full_weights_fname)
 full_history_fname = '{}.full.history.pkl'.format(hyperparams_name)
-full_history_fpath = os.path.join(path_result, full_history_fname)
+full_history_fpath = os.path.join(path_hist, full_history_fname)
 predictions_fname = '{}.stressnet.predictions.npy'.format(hyperparams_name)
 predictions_fpath = os.path.join(path_predictions, predictions_fname)
 pred_timestamps_fname = 'timestamps_T{}_{}.npy'.format(len_interval, len_test)

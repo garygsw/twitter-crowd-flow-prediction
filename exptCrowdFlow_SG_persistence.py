@@ -11,7 +11,6 @@ import time
 import numpy as np
 import h5py
 import warnings
-from datetime import datetime
 from dataset import load_data
 
 # Input parameters
