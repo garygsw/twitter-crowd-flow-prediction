@@ -192,7 +192,7 @@ def build_model(external_dim, loss, metric):
     return model
 
 
-def read_cache(cache_fpath, norm_fpath):
+def read_cache(cache_fpath, norm_fpath, use_mask):
     '''Read the prepared dataset (train and test set prepared).'''
     logging.info('reading %s...' % cache_fpath)
     mmn = pickle.load(open(norm_fpath, 'rb'))
@@ -207,7 +207,7 @@ def read_cache(cache_fpath, norm_fpath):
     external_dim = f['external_dim'].value
     timestamp_train = f['T_train'].value
     timestamp_test = f['T_test'].value
-    mask = f['mask'].value
+    mask = f['mask'].value if use_mask else None
     f.close()
     return X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
         timestamp_test, mask
@@ -255,7 +255,9 @@ def main():
     norm_exists = os.path.exists(norm_fpath)
     if CACHEDATA and cache_exists and norm_exists:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
-            timestamp_test, mask = read_cache(cache_fpath, norm_fpath)
+            timestamp_test, mask = read_cache(cache_fpath,
+                                              norm_fpath,
+                                              use_mask)
         logging.info('loaded %s successfully' % cache_fpath)
     else:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
