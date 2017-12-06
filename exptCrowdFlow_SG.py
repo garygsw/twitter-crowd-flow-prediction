@@ -286,8 +286,8 @@ def main():
     print_header("compiling model...")
     ts = time.time()
     # use masked rmse if use_mask
-    loss_function = metrics.masked_mse(mask) if use_mask else metrics.rmse
-    metric_function = metrics.masked_rmse(mask) if use_mask else metrics.mse
+    loss_function = metrics.masked_mse(mask) if use_mask else metrics.mse
+    metric_function = metrics.masked_rmse(mask) if use_mask else metrics.rmse
     model = build_model(external_dim, loss_function, metric_function)
     print_elasped(ts, 'model compilation')
 
