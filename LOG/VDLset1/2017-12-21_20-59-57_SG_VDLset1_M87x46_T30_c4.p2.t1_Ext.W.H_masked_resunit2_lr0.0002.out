@@ -1,0 +1,2649 @@
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 4, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 4, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 118.486 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.911 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6878.800 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001459 rmse (norm): 0.038105 rmse (real): 3174.728473
+Test score: 0.001379 rmse (norm): 0.037130 rmse (real): 3093.465063
+
+elapsed time (development evaluation): 80.460 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22429.965 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000906 rmse (norm): 0.030036 rmse (real): 2502.474550
+Test score: 0.000920 rmse (norm): 0.030338 rmse (real): 2527.580445
+
+elapsed time (full evaluation): 80.383 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 8 mins 28.764377 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5712, 8, 46, 87)
+XP shape: (5712, 6, 46, 87)
+XT shape: (0,)
+Y shape: (5712, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5712,)
+weather shape: (5712, 8)
+temperature shape: (5712,)
+merged shape: (5712, 10)
+time feature shape: (5712, 8)
+holiday feature shape: (5712, 1)
+weather feature shape: (5712, 10)
+meta feature shape: (5712, 19)
+train set X shape: (4368, 8, 46, 87)
+train set Y shape(4368, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4368, 8, 46, 87)
+X train shape for period : (4368, 6, 46, 87)
+X train shape for trend : (4368, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 86.988 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.461 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6180.011 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.002121 rmse (norm): 0.046020 rmse (real): 3834.162660
+Test score: 0.001915 rmse (norm): 0.043756 rmse (real): 3645.495664
+
+elapsed time (development evaluation): 57.354 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15820.838 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001022 rmse (norm): 0.031931 rmse (real): 2660.307051
+Test score: 0.001012 rmse (norm): 0.031816 rmse (real): 2650.753540
+
+elapsed time (full evaluation): 57.348 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 6 mins 40.849449 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 6, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 6, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 147.603 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.487 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6676.063 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001306 rmse (norm): 0.036030 rmse (real): 3001.832582
+Test score: 0.001217 rmse (norm): 0.034882 rmse (real): 2906.139276
+
+elapsed time (development evaluation): 80.860 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22441.262 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000919 rmse (norm): 0.030253 rmse (real): 2520.520928
+Test score: 0.000928 rmse (norm): 0.030460 rmse (real): 2537.724912
+
+elapsed time (full evaluation): 80.839 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 5 mins 17.324479 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5664, 8, 46, 87)
+XP shape: (5664, 8, 46, 87)
+XT shape: (0,)
+Y shape: (5664, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5664,)
+weather shape: (5664, 8)
+temperature shape: (5664,)
+merged shape: (5664, 10)
+time feature shape: (5664, 8)
+holiday feature shape: (5664, 1)
+weather feature shape: (5664, 10)
+meta feature shape: (5664, 19)
+train set X shape: (4320, 8, 46, 87)
+train set Y shape(4320, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4320, 8, 46, 87)
+X train shape for period : (4320, 8, 46, 87)
+X train shape for trend : (4320, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 124.968 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.357 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6272.703 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001591 rmse (norm): 0.039843 rmse (real): 3319.524033
+Test score: 0.001557 rmse (norm): 0.039454 rmse (real): 3287.128620
+
+elapsed time (development evaluation): 57.357 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15688.000 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000941 rmse (norm): 0.030642 rmse (real): 2552.951941
+Test score: 0.000961 rmse (norm): 0.030997 rmse (real): 2582.497437
+
+elapsed time (full evaluation): 57.296 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 6 mins 0.702385 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 8, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 8, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 186.698 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.966 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 4399.386 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001705 rmse (norm): 0.041182 rmse (real): 3431.070364
+Test score: 0.001571 rmse (norm): 0.039634 rmse (real): 3302.048450
+
+elapsed time (development evaluation): 81.392 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22508.895 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000942 rmse (norm): 0.030623 rmse (real): 2551.375791
+Test score: 0.000922 rmse (norm): 0.030360 rmse (real): 2529.387734
+
+elapsed time (full evaluation): 81.421 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 28 mins 28.280783 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5852, 8, 46, 87)
+XP shape: (0,)
+XT shape: (0,)
+Y shape: (5852, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5852,)
+weather shape: (5852, 8)
+temperature shape: (5852,)
+merged shape: (5852, 10)
+time feature shape: (5852, 8)
+holiday feature shape: (5852, 1)
+weather feature shape: (5852, 10)
+meta feature shape: (5852, 19)
+train set X shape: (4508, 8, 46, 87)
+train set Y shape(4508, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4508, 8, 46, 87)
+X train shape for period : (4508, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 19)
+
+elapsed time (loading data): 22.909 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.083 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 1696.148 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001758 rmse (norm): 0.041872 rmse (real): 3678.015354
+Test score: 0.001846 rmse (norm): 0.042966 rmse (real): 3774.105150
+
+elapsed time (development evaluation): 30.498 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 8270.617 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001065 rmse (norm): 0.032573 rmse (real): 2861.164130
+Test score: 0.001296 rmse (norm): 0.036002 rmse (real): 3162.387441
+
+elapsed time (full evaluation): 30.510 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 2 hrs 46 mins 6.764334 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (0,)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 2, 46, 87)
+X train shape for trend : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 86.030 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.122 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7793.276 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001177 rmse (norm): 0.034191 rmse (real): 3003.293212
+Test score: 0.001386 rmse (norm): 0.037227 rmse (real): 3269.962872
+
+elapsed time (development evaluation): 54.206 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 14981.140 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000909 rmse (norm): 0.030042 rmse (real): 2638.917282
+Test score: 0.001121 rmse (norm): 0.033481 rmse (real): 2940.914213
+
+elapsed time (full evaluation): 54.197 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 19 mins 34.415896 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5808, 8, 46, 87)
+XP shape: (5808, 2, 46, 87)
+XT shape: (0,)
+Y shape: (5808, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5808,)
+weather shape: (5808, 8)
+temperature shape: (5808,)
+merged shape: (5808, 10)
+time feature shape: (5808, 8)
+holiday feature shape: (5808, 1)
+weather feature shape: (5808, 10)
+meta feature shape: (5808, 19)
+train set X shape: (4464, 8, 46, 87)
+train set Y shape(4464, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4464, 8, 46, 87)
+X train shape for period : (4464, 2, 46, 87)
+X train shape for trend : (4464, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 36.625 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.694 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6548.556 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001343 rmse (norm): 0.036578 rmse (real): 3213.025468
+Test score: 0.001572 rmse (norm): 0.039642 rmse (real): 3482.169013
+
+elapsed time (development evaluation): 57.021 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 16018.555 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000928 rmse (norm): 0.030394 rmse (real): 2669.818445
+Test score: 0.001156 rmse (norm): 0.034005 rmse (real): 2986.984592
+
+elapsed time (full evaluation): 57.041 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 16 mins 7.111504 s
+==========
+loading data...
+
+reading dataset/CACHE/SG_VDLset2_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5...
+loaded dataset/CACHE/SG_VDLset2_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5 successfully
+
+elapsed time (loading data): 3.675 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.451 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7052.970 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001261 rmse (norm): 0.035391 rmse (real): 3108.698821
+Test score: 0.001469 rmse (norm): 0.038324 rmse (real): 3366.378532
+
+elapsed time (development evaluation): 79.731 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22323.954 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000861 rmse (norm): 0.029241 rmse (real): 2568.550367
+Test score: 0.001088 rmse (norm): 0.032978 rmse (real): 2896.746009
+
+elapsed time (full evaluation): 79.768 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 9 mins 36.923379 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5760, 8, 46, 87)
+XP shape: (5760, 4, 46, 87)
+XT shape: (0,)
+Y shape: (5760, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5760,)
+weather shape: (5760, 8)
+temperature shape: (5760,)
+merged shape: (5760, 10)
+time feature shape: (5760, 8)
+holiday feature shape: (5760, 1)
+weather feature shape: (5760, 10)
+meta feature shape: (5760, 19)
+train set X shape: (4416, 8, 46, 87)
+train set Y shape(4416, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4416, 8, 46, 87)
+X train shape for period : (4416, 4, 46, 87)
+X train shape for trend : (4416, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 58.370 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.608 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5771.933 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001318 rmse (norm): 0.036227 rmse (real): 3182.148759
+Test score: 0.001544 rmse (norm): 0.039295 rmse (real): 3451.669107
+
+elapsed time (development evaluation): 57.411 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15920.751 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000883 rmse (norm): 0.029625 rmse (real): 2602.224709
+Test score: 0.001084 rmse (norm): 0.032918 rmse (real): 2891.486479
+
+elapsed time (full evaluation): 57.372 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 1 mins 32.684041 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 4, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 4, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 120.577 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.544 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6250.359 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001581 rmse (norm): 0.039632 rmse (real): 3481.213700
+Test score: 0.001717 rmse (norm): 0.041442 rmse (real): 3640.213745
+
+elapsed time (development evaluation): 80.446 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22410.403 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001160 rmse (norm): 0.033979 rmse (real): 2984.699303
+Test score: 0.001413 rmse (norm): 0.037590 rmse (real): 3301.923523
+
+elapsed time (full evaluation): 80.447 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 57 mins 40.762672 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5712, 8, 46, 87)
+XP shape: (5712, 6, 46, 87)
+XT shape: (0,)
+Y shape: (5712, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5712,)
+weather shape: (5712, 8)
+temperature shape: (5712,)
+merged shape: (5712, 10)
+time feature shape: (5712, 8)
+holiday feature shape: (5712, 1)
+weather feature shape: (5712, 10)
+meta feature shape: (5712, 19)
+train set X shape: (4368, 8, 46, 87)
+train set Y shape(4368, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4368, 8, 46, 87)
+X train shape for period : (4368, 6, 46, 87)
+X train shape for trend : (4368, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 88.887 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.647 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6610.718 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001354 rmse (norm): 0.036738 rmse (real): 3227.064672
+Test score: 0.001518 rmse (norm): 0.038964 rmse (real): 3422.543229
+
+elapsed time (development evaluation): 57.346 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15803.908 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000841 rmse (norm): 0.028909 rmse (real): 2539.367433
+Test score: 0.001052 rmse (norm): 0.032441 rmse (real): 2849.621629
+
+elapsed time (full evaluation): 57.336 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 13 mins 34.626228 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 6, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 6, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 149.471 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.658 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7511.334 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001134 rmse (norm): 0.033557 rmse (real): 2947.660420
+Test score: 0.001341 rmse (norm): 0.036615 rmse (real): 3216.243874
+
+elapsed time (development evaluation): 80.937 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22448.737 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000815 rmse (norm): 0.028434 rmse (real): 2497.654073
+Test score: 0.001047 rmse (norm): 0.032350 rmse (real): 2841.620586
+
+elapsed time (full evaluation): 80.912 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 19 mins 20.071349 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5664, 8, 46, 87)
+XP shape: (5664, 8, 46, 87)
+XT shape: (0,)
+Y shape: (5664, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5664,)
+weather shape: (5664, 8)
+temperature shape: (5664,)
+merged shape: (5664, 10)
+time feature shape: (5664, 8)
+holiday feature shape: (5664, 1)
+weather feature shape: (5664, 10)
+meta feature shape: (5664, 19)
+train set X shape: (4320, 8, 46, 87)
+train set Y shape(4320, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4320, 8, 46, 87)
+X train shape for period : (4320, 8, 46, 87)
+X train shape for trend : (4320, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 126.596 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.806 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6274.778 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001291 rmse (norm): 0.035867 rmse (real): 3150.498797
+Test score: 0.001494 rmse (norm): 0.038651 rmse (real): 3395.055781
+
+elapsed time (development evaluation): 57.456 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15691.585 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000896 rmse (norm): 0.029849 rmse (real): 2621.962541
+Test score: 0.001120 rmse (norm): 0.033469 rmse (real): 2939.905371
+
+elapsed time (full evaluation): 57.430 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 6 mins 6.362729 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2014-09-01 to 2014-12-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 175679.000, min: 0.000
+# of valid inflow cells: 889
+# of valid outflow cells: 947
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 8, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 8, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 186.601 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.964 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5244.064 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001510 rmse (norm): 0.038736 rmse (real): 3402.567237
+Test score: 0.001751 rmse (norm): 0.041846 rmse (real): 3675.712708
+
+elapsed time (development evaluation): 81.402 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22510.135 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000874 rmse (norm): 0.029459 rmse (real): 2587.650396
+Test score: 0.001105 rmse (norm): 0.033243 rmse (real): 2920.038399
+
+elapsed time (full evaluation): 81.380 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 42 mins 34.199462 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5852, 8, 46, 87)
+XP shape: (0,)
+XT shape: (0,)
+Y shape: (5852, 2, 46, 87)
+total number of holidays/weekends: 1820.0
+windspeed shape: (5852,)
+weather shape: (5852, 8)
+temperature shape: (5852,)
+merged shape: (5852, 10)
+time feature shape: (5852, 8)
+holiday feature shape: (5852, 1)
+weather feature shape: (5852, 10)
+meta feature shape: (5852, 19)
+train set X shape: (4508, 8, 46, 87)
+train set Y shape(4508, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4508, 8, 46, 87)
+X train shape for period : (4508, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 19)
+
+elapsed time (loading data): 25.017 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 1.551 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 1691.995 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001783 rmse (norm): 0.042170 rmse (real): 3393.117727
+Test score: 0.001793 rmse (norm): 0.042341 rmse (real): 3406.866305
+
+elapsed time (development evaluation): 30.461 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 8252.734 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001316 rmse (norm): 0.036234 rmse (real): 2915.523436
+Test score: 0.001450 rmse (norm): 0.038075 rmse (real): 3063.666797
+
+elapsed time (full evaluation): 30.460 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 2 hrs 45 mins 44.729245 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (0,)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1680.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 2, 46, 87)
+X train shape for trend : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 92.889 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.841 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6823.675 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001493 rmse (norm): 0.038552 rmse (real): 3102.032728
+Test score: 0.001730 rmse (norm): 0.041599 rmse (real): 3347.200560
+
+elapsed time (development evaluation): 54.385 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 14983.766 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001134 rmse (norm): 0.033592 rmse (real): 2702.903044
+Test score: 0.001383 rmse (norm): 0.037189 rmse (real): 2992.346548
+
+elapsed time (full evaluation): 54.290 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 3 mins 27.440369 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5808, 8, 46, 87)
+XP shape: (5808, 2, 46, 87)
+XT shape: (0,)
+Y shape: (5808, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5808,)
+weather shape: (5808, 8)
+temperature shape: (5808,)
+merged shape: (5808, 10)
+time feature shape: (5808, 8)
+holiday feature shape: (5808, 1)
+weather feature shape: (5808, 10)
+meta feature shape: (5808, 19)
+train set X shape: (4464, 8, 46, 87)
+train set Y shape(4464, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4464, 8, 46, 87)
+X train shape for period : (4464, 2, 46, 87)
+X train shape for trend : (4464, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 37.198 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.483 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5062.886 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001903 rmse (norm): 0.043525 rmse (real): 3502.114452
+Test score: 0.002314 rmse (norm): 0.048106 rmse (real): 3870.789034
+
+elapsed time (development evaluation): 57.198 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 16011.325 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001125 rmse (norm): 0.033497 rmse (real): 2695.270375
+Test score: 0.001312 rmse (norm): 0.036225 rmse (real): 2914.796337
+
+elapsed time (full evaluation): 57.018 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 5 hrs 51 mins 14.211742 s
+==========
+loading data...
+
+reading dataset/CACHE/SG_VDLset3_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5...
+loaded dataset/CACHE/SG_VDLset3_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5 successfully
+
+elapsed time (loading data): 9.999 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.005 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6017.433 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001655 rmse (norm): 0.040547 rmse (real): 3262.517725
+Test score: 0.002032 rmse (norm): 0.045078 rmse (real): 3627.125057
+
+elapsed time (development evaluation): 79.873 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22320.636 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001041 rmse (norm): 0.032187 rmse (real): 2589.844221
+Test score: 0.001277 rmse (norm): 0.035733 rmse (real): 2875.188531
+
+elapsed time (full evaluation): 80.085 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 52 mins 18.069405 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5760, 8, 46, 87)
+XP shape: (5760, 4, 46, 87)
+XT shape: (0,)
+Y shape: (5760, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5760,)
+weather shape: (5760, 8)
+temperature shape: (5760,)
+merged shape: (5760, 10)
+time feature shape: (5760, 8)
+holiday feature shape: (5760, 1)
+weather feature shape: (5760, 10)
+meta feature shape: (5760, 19)
+train set X shape: (4416, 8, 46, 87)
+train set Y shape(4416, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4416, 8, 46, 87)
+X train shape for period : (4416, 4, 46, 87)
+X train shape for trend : (4416, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 58.498 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.202 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5188.550 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001752 rmse (norm): 0.041774 rmse (real): 3361.299677
+Test score: 0.001912 rmse (norm): 0.043725 rmse (real): 3518.274256
+
+elapsed time (development evaluation): 57.460 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15941.556 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001091 rmse (norm): 0.032988 rmse (real): 2654.331810
+Test score: 0.001224 rmse (norm): 0.034985 rmse (real): 2814.972448
+
+elapsed time (full evaluation): 57.487 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 5 hrs 52 mins 10.105508 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 4, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1680.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 4, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 118.135 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.514 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7500.287 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001548 rmse (norm): 0.039248 rmse (real): 3157.984027
+Test score: 0.001757 rmse (norm): 0.041912 rmse (real): 3372.355115
+
+elapsed time (development evaluation): 80.493 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22419.151 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001195 rmse (norm): 0.034493 rmse (real): 2775.442933
+Test score: 0.001403 rmse (norm): 0.037460 rmse (real): 3014.172402
+
+elapsed time (full evaluation): 80.516 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 18 mins 39.438432 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5712, 8, 46, 87)
+XP shape: (5712, 6, 46, 87)
+XT shape: (0,)
+Y shape: (5712, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5712,)
+weather shape: (5712, 8)
+temperature shape: (5712,)
+merged shape: (5712, 10)
+time feature shape: (5712, 8)
+holiday feature shape: (5712, 1)
+weather feature shape: (5712, 10)
+meta feature shape: (5712, 19)
+train set X shape: (4368, 8, 46, 87)
+train set Y shape(4368, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4368, 8, 46, 87)
+X train shape for period : (4368, 6, 46, 87)
+X train shape for trend : (4368, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 87.866 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.837 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7062.305 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001536 rmse (norm): 0.039133 rmse (real): 3148.761223
+Test score: 0.001663 rmse (norm): 0.040778 rmse (real): 3281.086635
+
+elapsed time (development evaluation): 57.451 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15825.069 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001111 rmse (norm): 0.033292 rmse (real): 2678.773564
+Test score: 0.001223 rmse (norm): 0.034964 rmse (real): 2813.331328
+
+elapsed time (full evaluation): 57.466 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 21 mins 27.374433 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 6, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1680.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 6, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 148.106 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.957 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6892.754 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001648 rmse (norm): 0.040511 rmse (real): 3259.625650
+Test score: 0.001917 rmse (norm): 0.043780 rmse (real): 3522.692542
+
+elapsed time (development evaluation): 80.987 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22469.757 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.000999 rmse (norm): 0.031535 rmse (real): 2537.387244
+Test score: 0.001219 rmse (norm): 0.034915 rmse (real): 2809.363263
+
+elapsed time (full evaluation): 81.004 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 9 mins 22.511188 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5664, 8, 46, 87)
+XP shape: (5664, 8, 46, 87)
+XT shape: (0,)
+Y shape: (5664, 2, 46, 87)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5664,)
+weather shape: (5664, 8)
+temperature shape: (5664,)
+merged shape: (5664, 10)
+time feature shape: (5664, 8)
+holiday feature shape: (5664, 1)
+weather feature shape: (5664, 10)
+meta feature shape: (5664, 19)
+train set X shape: (4320, 8, 46, 87)
+train set Y shape(4320, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4320, 8, 46, 87)
+X train shape for period : (4320, 8, 46, 87)
+X train shape for trend : (4320, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 126.552 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.823 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6719.750 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001525 rmse (norm): 0.039001 rmse (real): 3138.166467
+Test score: 0.001780 rmse (norm): 0.042190 rmse (real): 3394.695636
+
+elapsed time (development evaluation): 57.549 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15705.852 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001055 rmse (norm): 0.032433 rmse (real): 2609.686651
+Test score: 0.001279 rmse (norm): 0.035767 rmse (real): 2877.903349
+
+elapsed time (full evaluation): 57.551 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 13 mins 45.601897 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-06-01 to 2015-09-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 160926.000, min: 0.000
+# of valid inflow cells: 882
+# of valid outflow cells: 935
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 8, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1680.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 8, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 184.302 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.038 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 10456.094 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001325 rmse (norm): 0.036319 rmse (real): 2922.312481
+Test score: 0.001534 rmse (norm): 0.039165 rmse (real): 3151.343396
+
+elapsed time (development evaluation): 82.236 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22506.267 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001031 rmse (norm): 0.032045 rmse (real): 2578.440697
+Test score: 0.001235 rmse (norm): 0.035145 rmse (real): 2827.888291
+
+elapsed time (full evaluation): 82.005 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 9 hrs 9 mins 22.361209 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5852, 8, 46, 87)
+XP shape: (0,)
+XT shape: (0,)
+Y shape: (5852, 2, 46, 87)
+total number of holidays/weekends: 1968.0
+windspeed shape: (5852,)
+weather shape: (5852, 8)
+temperature shape: (5852,)
+merged shape: (5852, 10)
+time feature shape: (5852, 8)
+holiday feature shape: (5852, 1)
+weather feature shape: (5852, 10)
+meta feature shape: (5852, 19)
+train set X shape: (4508, 8, 46, 87)
+train set Y shape(4508, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4508, 8, 46, 87)
+X train shape for period : (4508, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 19)
+
+elapsed time (loading data): 23.258 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 1.476 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 1847.870 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001785 rmse (norm): 0.042155 rmse (real): 3004.764145
+Test score: 0.001734 rmse (norm): 0.041640 rmse (real): 2968.044603
+
+elapsed time (development evaluation): 30.485 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 8258.906 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001312 rmse (norm): 0.036139 rmse (real): 2575.952583
+Test score: 0.001309 rmse (norm): 0.036174 rmse (real): 2578.402919
+
+elapsed time (full evaluation): 30.524 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 2 hrs 48 mins 26.775881 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (0,)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 2, 46, 87)
+X train shape for trend : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 86.317 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.742 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 4316.606 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.002135 rmse (norm): 0.045928 rmse (real): 3273.689188
+Test score: 0.001906 rmse (norm): 0.043661 rmse (real): 3112.089408
+
+elapsed time (development evaluation): 54.175 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 14975.680 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001292 rmse (norm): 0.035795 rmse (real): 2551.389854
+Test score: 0.001182 rmse (norm): 0.034386 rmse (real): 2450.992435
+
+elapsed time (full evaluation): 54.160 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 5 hrs 21 mins 32.286326 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5808, 8, 46, 87)
+XP shape: (5808, 2, 46, 87)
+XT shape: (0,)
+Y shape: (5808, 2, 46, 87)
+total number of holidays/weekends: 1968.0
+windspeed shape: (5808,)
+weather shape: (5808, 8)
+temperature shape: (5808,)
+merged shape: (5808, 10)
+time feature shape: (5808, 8)
+holiday feature shape: (5808, 1)
+weather feature shape: (5808, 10)
+meta feature shape: (5808, 19)
+train set X shape: (4464, 8, 46, 87)
+train set Y shape(4464, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4464, 8, 46, 87)
+X train shape for period : (4464, 2, 46, 87)
+X train shape for trend : (4464, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 2, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 36.313 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.892 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7439.877 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001558 rmse (norm): 0.039392 rmse (real): 2807.785777
+Test score: 0.001519 rmse (norm): 0.038971 rmse (real): 2777.816952
+
+elapsed time (development evaluation): 57.021 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 16016.249 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001119 rmse (norm): 0.033366 rmse (real): 2378.276996
+Test score: 0.001087 rmse (norm): 0.032975 rmse (real): 2350.380614
+
+elapsed time (full evaluation): 57.227 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 6 hrs 30 mins 56.125555 s
+==========
+loading data...
+
+reading dataset/CACHE/SG_VDLset4_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5...
+loaded dataset/CACHE/SG_VDLset4_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5 successfully
+
+elapsed time (loading data): 1.627 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.509 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 7259.136 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.002019 rmse (norm): 0.044701 rmse (real): 3186.242559
+Test score: 0.001829 rmse (norm): 0.042766 rmse (real): 3048.274103
+
+elapsed time (development evaluation): 79.697 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22323.577 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001164 rmse (norm): 0.033972 rmse (real): 2421.450308
+Test score: 0.001081 rmse (norm): 0.032873 rmse (real): 2343.165814
+
+elapsed time (full evaluation): 80.314 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 8 hrs 13 mins 2.713691 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5760, 8, 46, 87)
+XP shape: (5760, 4, 46, 87)
+XT shape: (0,)
+Y shape: (5760, 2, 46, 87)
+total number of holidays/weekends: 1968.0
+windspeed shape: (5760,)
+weather shape: (5760, 8)
+temperature shape: (5760,)
+merged shape: (5760, 10)
+time feature shape: (5760, 8)
+holiday feature shape: (5760, 1)
+weather feature shape: (5760, 10)
+meta feature shape: (5760, 19)
+train set X shape: (4416, 8, 46, 87)
+train set Y shape(4416, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4416, 8, 46, 87)
+X train shape for period : (4416, 4, 46, 87)
+X train shape for trend : (4416, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 58.780 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.480 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 9490.653 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001541 rmse (norm): 0.039170 rmse (real): 2792.011130
+Test score: 0.001461 rmse (norm): 0.038220 rmse (real): 2724.265033
+
+elapsed time (development evaluation): 57.621 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15963.101 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001175 rmse (norm): 0.034186 rmse (real): 2436.706444
+Test score: 0.001139 rmse (norm): 0.033754 rmse (real): 2405.962534
+
+elapsed time (full evaluation): 57.498 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 4 mins 13.754529 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 4, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 4, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 4, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 122.805 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.025 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5838.134 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001591 rmse (norm): 0.039660 rmse (real): 2826.874548
+Test score: 0.001438 rmse (norm): 0.037921 rmse (real): 2702.979102
+
+elapsed time (development evaluation): 81.046 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22409.797 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001054 rmse (norm): 0.032332 rmse (real): 2304.544768
+Test score: 0.000981 rmse (norm): 0.031323 rmse (real): 2232.665805
+
+elapsed time (full evaluation): 80.729 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 50 mins 47.931446 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5712, 8, 46, 87)
+XP shape: (5712, 6, 46, 87)
+XT shape: (0,)
+Y shape: (5712, 2, 46, 87)
+total number of holidays/weekends: 1968.0
+windspeed shape: (5712,)
+weather shape: (5712, 8)
+temperature shape: (5712,)
+merged shape: (5712, 10)
+time feature shape: (5712, 8)
+holiday feature shape: (5712, 1)
+weather feature shape: (5712, 10)
+meta feature shape: (5712, 19)
+train set X shape: (4368, 8, 46, 87)
+train set Y shape(4368, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4368, 8, 46, 87)
+X train shape for period : (4368, 6, 46, 87)
+X train shape for trend : (4368, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 88.420 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.235 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5737.860 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001764 rmse (norm): 0.041923 rmse (real): 2988.188514
+Test score: 0.001699 rmse (norm): 0.041215 rmse (real): 2937.727095
+
+elapsed time (development evaluation): 57.384 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15820.625 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001301 rmse (norm): 0.035992 rmse (real): 2565.439811
+Test score: 0.001254 rmse (norm): 0.035409 rmse (real): 2523.905966
+
+elapsed time (full evaluation): 57.392 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 5 hrs 59 mins 18.484331 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 6, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 6, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 6, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 150.149 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.513 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 4801.674 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001797 rmse (norm): 0.042147 rmse (real): 3004.141854
+Test score: 0.001676 rmse (norm): 0.040940 rmse (real): 2918.146684
+
+elapsed time (development evaluation): 81.464 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22436.423 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001270 rmse (norm): 0.035493 rmse (real): 2529.863451
+Test score: 0.001227 rmse (norm): 0.035035 rmse (real): 2497.237680
+
+elapsed time (full evaluation): 80.961 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 33 mins 58.097628 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5664, 8, 46, 87)
+XP shape: (5664, 8, 46, 87)
+XT shape: (0,)
+Y shape: (5664, 2, 46, 87)
+total number of holidays/weekends: 1968.0
+windspeed shape: (5664,)
+weather shape: (5664, 8)
+temperature shape: (5664,)
+merged shape: (5664, 10)
+time feature shape: (5664, 8)
+holiday feature shape: (5664, 1)
+weather feature shape: (5664, 10)
+meta feature shape: (5664, 19)
+train set X shape: (4320, 8, 46, 87)
+train set Y shape(4320, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4320, 8, 46, 87)
+X train shape for period : (4320, 8, 46, 87)
+X train shape for trend : (4320, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 19)
+
+elapsed time (loading data): 125.789 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 2.798 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 5847.120 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001810 rmse (norm): 0.042443 rmse (real): 3025.256626
+Test score: 0.001742 rmse (norm): 0.041739 rmse (real): 2975.069016
+
+elapsed time (development evaluation): 57.477 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 15714.415 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001136 rmse (norm): 0.033593 rmse (real): 2394.490497
+Test score: 0.001081 rmse (norm): 0.032882 rmse (real): 2343.789020
+
+elapsed time (full evaluation): 57.472 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 5 hrs 59 mins 21.534907 s
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 46, 87)
+# of days: 122, from 2015-12-01 to 2016-03-31
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 142557.000, min: 0.000
+# of valid inflow cells: 881
+# of valid outflow cells: 939
+=====stat=====
+
+train_data shape: (4512, 2, 46, 87)
+XC shape: (5520, 8, 46, 87)
+XP shape: (5520, 8, 46, 87)
+XT shape: (5520, 2, 46, 87)
+Y shape: (5520, 2, 46, 87)
+total number of holidays/weekends: 1872.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+train set X shape: (4176, 8, 46, 87)
+train set Y shape(4176, 2, 46, 87)
+test set X shape: (1344, 8, 46, 87)
+test set Y shape: (1344, 2, 46, 87)
+X train shape for closeness : (4176, 8, 46, 87)
+X train shape for period : (4176, 8, 46, 87)
+X train shape for trend : (4176, 2, 46, 87)
+X train shape for meta : (4176, 19)
+X test shape for closeness : (1344, 8, 46, 87)
+X test shape for period : (1344, 8, 46, 87)
+X test shape for trend : (1344, 2, 46, 87)
+X test shape for meta : (1344, 19)
+
+elapsed time (loading data): 187.346 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 3.912 seconds
+
+==========
+training model (development)...
+
+
+elapsed time (development training): 6076.698 seconds
+
+==========
+evaluate the model that has the best loss on the valid set
+
+Train score: 0.001689 rmse (norm): 0.040892 rmse (real): 2914.689736
+Test score: 0.001572 rmse (norm): 0.039655 rmse (real): 2826.521831
+
+elapsed time (development evaluation): 81.480 seconds
+
+==========
+training model (full)...
+
+
+elapsed time (full training): 22537.268 seconds
+
+==========
+evaluating using the final model
+
+Train score: 0.001110 rmse (norm): 0.033171 rmse (real): 2364.377384
+Test score: 0.001024 rmse (norm): 0.032000 rmse (real): 2280.933085
+
+elapsed time (full evaluation): 81.378 seconds
+
+Predictions shape: (1344, 2, 46, 87)
+Test shape: (1344, 2, 46, 87)
+Total training time: 7 hrs 56 mins 53.965727 s
