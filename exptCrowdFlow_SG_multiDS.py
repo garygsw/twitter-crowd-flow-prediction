@@ -28,10 +28,7 @@ use_weather = True
 use_holidays = True
 use_tweet_counts = True
 len_interval = 30  # 30 minutes per time slot
-DATAPATH = 'dataset'
 CACHEDATA = True                                # cache data or NOT
-path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
-path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
 batch_size = 32              # batch size
@@ -49,10 +46,6 @@ nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
 validation_split = 0.1              # during development training phase
-path_hist = 'HIST'                  # history path
-path_model = 'MODEL'                # model path
-path_log = 'LOG'                    # log path
-path_predictions = 'PRED'           # predictions path
 checkpoint_verbose = True
 development_training_verbose = True
 development_evaluate_verbose = True
@@ -66,6 +59,13 @@ warnings.filterwarnings('ignore')
 
 def run_experiment(ds_name):
     '''main function.'''
+    DATAPATH = 'dataset'
+    path_hist = 'HIST'                  # history path
+    path_model = 'MODEL'                # model path
+    path_log = 'LOG'                    # log path
+    path_predictions = 'PRED'           # predictions path
+    path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
+    path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
     flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
                                                          ds_name,
                                                          map_width,
@@ -80,8 +80,6 @@ def run_experiment(ds_name):
                                                                       map_width,
                                                                       map_height,
                                                                       len_interval)
-
-
 
     # Make the folders and the respective paths if it does not already exists
     DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
