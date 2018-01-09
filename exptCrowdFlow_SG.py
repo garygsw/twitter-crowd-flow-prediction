@@ -70,6 +70,7 @@ use_mask = True
 warnings.filterwarnings('ignore')
 
 # Make the folders and the respective paths if it does not already exists
+DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
 if not os.path.isdir(path_hist):
     os.mkdir(path_hist)
 path_hist = os.path.join(path_hist, ds_name)
@@ -162,9 +163,8 @@ log_fpath = os.path.join(path_log, log_fname)
 fileHandler = logging.FileHandler(log_fpath)
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
-root_logger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler(sys.stdout)
-root_logger.addHandler(consoleHandler)
+root_logger.handlers = [fileHandler, consoleHandler]
 
 
 def build_model(external_dim, loss, metric):
