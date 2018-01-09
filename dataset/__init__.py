@@ -6,6 +6,7 @@ from copy import copy
 import pandas as pd
 import numpy as np
 import h5py
+from datetime import datetime
 from preprocessing import MinMaxNormalization, remove_incomplete_days, timestamp2vec, string2timestamp
 
 
@@ -59,7 +60,8 @@ class STMatrix(object):
                 return False
         return True
 
-    def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7, len_period=3, PeriodInterval=1):
+    def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
+                       len_period=3, PeriodInterval=1, use_tweet_counts=False):
         """current version
         """
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
@@ -92,6 +94,8 @@ class STMatrix(object):
             x_p = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame) for j in depends[1]]
             x_t = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame) for j in depends[2]]
             y = self.get_matrix(self.pd_timestamps[i])
+            if use_tweet_counts:
+                y = y[:2, :, :]
             if len_closeness > 0:
                 XC.append(np.vstack(x_c))
             if len_period > 0:
@@ -218,28 +222,59 @@ def load_weather(timeslots, datapath):
     return merge_data
 
 
-def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
+def load_data(datapath, flow_data_filename=None, T=48,
               len_closeness=None, len_period=None, len_trend=None,
               period_interval=1, trend_interval=7, use_mask=False,
-              len_test=None, norm_name=None,
-              meta_data=False, weather_data=False, holiday_data=False,
+              len_test=None, norm_name=None, meta_data=False,
+              weather_data=False, holiday_data=False,
+              tweet_count_data=False, tweet_count_data_filename=None,
               weather_data_filename=None, holiday_data_filename=None):
     assert(len_closeness + len_period + len_trend > 0)
     # Load the h5 file and retrieve data
     flow_data_path = os.path.join(datapath, flow_data_filename)
     stat(flow_data_path)
     f = h5py.File(flow_data_path, 'r')
-    data = f['data'].value
+    flow_data = f['data'].value
     timestamps = f['date'].value
     mask = f['mask'].value if use_mask else None
     f.close()
 
     # minmax_scale
-    data_train = copy(data)[:-len_test]
+    data_train = copy(flow_data)[:-len_test]
     logging.info('train_data shape: ' + str(data_train.shape))
     mmn = MinMaxNormalization()
     mmn.fit(data_train)
-    data_mmn = [mmn.transform(d) for d in data]
+    data_mmn = np.array([mmn.transform(d) for d in flow_data])
+
+    # Load tweet count data tile
+    if tweet_count_data:
+        tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
+        f = h5py.File(tweet_count_path, 'r')
+        assert(timestamps[0] == f['date'].value[0])
+        assert(timestamps[-1] == f['date'].value[-1])
+        tweet_counts = f['count'].value
+        f.close()
+
+        # Normalize tweet counts
+        hist_seq = {i: {} for i in range(7)}
+        for i, timestamp in enumerate(timestamps):
+            date, timeslot = timestamp.split('_')
+            weekday = datetime.strptime(date, '%Y%m%d').weekday()
+            count_matrix = tweet_counts[i]
+            hist_seq[weekday][timeslot] = hist_seq[weekday].get(timeslot, []) + \
+                [count_matrix]
+        hist_max = {i: {} for i in range(7)}
+        for weekday, timeslots in hist_seq.iteritems():
+            for t, matrix_seq in timeslots.iteritems():
+                hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
+        for i, timestamp in enumerate(timestamps):
+            date, timeslot = timestamp.split('_')
+            weekday = datetime.strptime(date, '%Y%m%d').weekday()
+            tweet_counts[i] = np.divide(tweet_counts[i],
+                                        hist_max[weekday][timeslot],
+                                        out=np.zeros_like(tweet_counts[i]),
+                                        where=hist_max[weekday][timeslot] != 0)
+        data_mmn = np.insert(data_mmn, 2, tweet_counts, axis=1)
 
     # save preprocessing stats
     fpkl = open(norm_name, 'wb')
@@ -255,7 +290,8 @@ def load_data(datapath, flow_data_filename=None, T=48, nb_flow=2,
         len_period=len_period,
         len_trend=len_trend,
         PeriodInterval=period_interval,
-        TrendInterval=trend_interval
+        TrendInterval=trend_interval,
+        use_tweet_counts=tweet_count_data,
     )
     logging.info("XC shape: " + str(XC.shape))
     logging.info("XP shape: " + str(XP.shape))

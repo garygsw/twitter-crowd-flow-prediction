@@ -36,9 +36,9 @@ def _residual_unit(nb_filter, init_subsample=(1, 1)):
     return f
 
 
-def ResUnits(residual_unit, nb_filter, repetations=1):
+def ResUnits(residual_unit, nb_filter, repetitions=1):
     def f(input):
-        for i in range(repetations):
+        for i in range(repetitions):
             init_subsample = (1, 1)
             input = residual_unit(nb_filter=nb_filter,
                                   init_subsample=init_subsample)(input)
@@ -46,33 +46,43 @@ def ResUnits(residual_unit, nb_filter, repetations=1):
     return f
 
 
-def stresnet(c_conf=(3, 2, 32, 32), p_conf=(3, 2, 32, 32), t_conf=(3, 2, 32, 32), external_dim=8, nb_residual_unit=3):
+def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
+             external_dim, nb_filters=64, kernal_size=(3, 3),
+             nb_residual_unit=2, use_tweet_counts=False):
     '''
     C - Temporal Closeness
     P - Period
     T - Trend
-    conf = (len_seq, nb_flow, map_height, map_width)
-    external_dim
     '''
+
+    kernal_w, kernal_h = kernal_size
+    if use_tweet_counts:
+        input_dim = 3
+    else:
+        input_dim = 2
 
     # main input
     main_inputs = []
     outputs = []
-    for conf in [c_conf, p_conf, t_conf]:
-        if conf is not None:
-            len_seq, nb_flow, map_height, map_width = conf
-            input = Input(shape=(nb_flow * len_seq, map_height, map_width))
+    for len_seq in [len_closeness, len_period, len_trend]:
+        if len_seq is not None:
+            input = Input(shape=(input_dim * len_seq, map_height, map_width))
             main_inputs.append(input)
             # Conv1
-            conv1 = Convolution2D(
-                nb_filter=64, nb_row=3, nb_col=3, border_mode="same")(input)
+            conv1 = Convolution2D(nb_filter=nb_filters,
+                                  nb_row=kernal_h,
+                                  nb_col=kernal_w,
+                                  border_mode="same")(input)
             # [nb_residual_unit] Residual Units
-            residual_output = ResUnits(_residual_unit, nb_filter=64,
-                              repetations=nb_residual_unit)(conv1)
+            residual_output = ResUnits(_residual_unit,
+                                       nb_filter=nb_filters,
+                                       repetitions=nb_residual_unit)(conv1)
             # Conv2
             activation = Activation('relu')(residual_output)
-            conv2 = Convolution2D(
-                nb_filter=nb_flow, nb_row=3, nb_col=3, border_mode="same")(activation)
+            conv2 = Convolution2D(nb_filter=2,  # output dim of prediction
+                                  nb_row=kernal_h,
+                                  nb_col=kernal_w,
+                                  border_mode="same")(activation)
             outputs.append(conv2)
 
     # parameter-matrix-based fusion
@@ -92,9 +102,9 @@ def stresnet(c_conf=(3, 2, 32, 32), p_conf=(3, 2, 32, 32), t_conf=(3, 2, 32, 32)
         main_inputs.append(external_input)
         embedding = Dense(output_dim=10)(external_input)
         embedding = Activation('relu')(embedding)
-        h1 = Dense(output_dim=nb_flow * map_height * map_width)(embedding)
+        h1 = Dense(output_dim=2 * map_height * map_width)(embedding)
         activation = Activation('relu')(h1)
-        external_output = Reshape((nb_flow, map_height, map_width))(activation)
+        external_output = Reshape((2, map_height, map_width))(activation)
         main_output = merge([main_output, external_output], mode='sum')
     else:
         print('external_dim:', external_dim)

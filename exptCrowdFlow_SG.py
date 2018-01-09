@@ -26,6 +26,7 @@ map_height, map_width = 46, 87  # (23, 44) - 1km, (46, 87) - 500m
 use_meta = True
 use_weather = True
 use_holidays = True
+use_tweet_counts = True
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
 flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
@@ -37,6 +38,11 @@ weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
                                                    ds_name,
                                                    len_interval)
 holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
+tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount.h5'.format(city_name,
+                                                                  ds_name,
+                                                                  map_width,
+                                                                  map_height,
+                                                                  len_interval)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
@@ -51,6 +57,8 @@ len_trend = 1                # length of trend dependent sequence
 nb_residual_unit = 2         # number of residual units
 period_interval = 1          # period interval length (in days)
 trend_interval = 7           # period interval length (in days)
+kernal_size = (3, 3)         # window for convolutional NN
+nb_filters = 64              # for conv1 layer
 nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
@@ -107,16 +115,18 @@ if CACHEDATA:
     else:
         meta_info = ''
     mask_info = '_masked' if use_mask else ''
-    cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}.h5'.format(city_name,
-                                                               ds_name,
-                                                               map_width,
-                                                               map_height,
-                                                               len_interval,
-                                                               len_closeness,
-                                                               len_period,
-                                                               len_trend,
-                                                               meta_info,
-                                                               mask_info)
+    tweet_info = '_tweetcount' if use_tweet_counts else ''
+    cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(city_name,
+                                                                 ds_name,
+                                                                 map_width,
+                                                                 map_height,
+                                                                 len_interval,
+                                                                 len_closeness,
+                                                                 len_period,
+                                                                 len_trend,
+                                                                 meta_info,
+                                                                 mask_info,
+                                                                 tweet_info)
     cache_fpath = os.path.join(path_cache, cache_fname)
     norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
     norm_fpath = os.path.join(path_norm, norm_fname)
@@ -169,19 +179,20 @@ root_logger.handlers = [fileHandler, consoleHandler]
 
 def build_model(external_dim, loss, metric):
     '''Define the model configuration and optimizer, and compiles it.'''
-    c_conf, p_conf, t_conf = None, None, None
-    if len_closeness > 0:
-        c_conf = (len_closeness, nb_flow, map_height, map_width)
-    if len_period > 0:
-        p_conf = (len_period, nb_flow, map_height, map_width)
-    if len_trend > 0:
-        t_conf = (len_trend, nb_flow, map_height, map_width)
+    c_conf = None if len_closeness <= 0 else len_closeness
+    p_conf = None if len_period <= 0 else len_period
+    t_conf = None if len_trend <= 0 else len_trend
 
-    model = stresnet(c_conf=c_conf,
-                     p_conf=p_conf,
-                     t_conf=t_conf,
+    model = stresnet(map_height=map_height,
+                     map_width=map_width,
+                     len_closeness=c_conf,
+                     len_period=p_conf,
+                     len_trend=t_conf,
                      external_dim=external_dim,
-                     nb_residual_unit=nb_residual_unit)
+                     nb_residual_unit=nb_residual_unit,
+                     nb_filters=nb_filters,
+                     kernal_size=kernal_size,
+                     use_tweet_counts=use_tweet_counts)
     adam = Adam(lr=lr)
     model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()
@@ -265,7 +276,6 @@ def main():
                 datapath=DATAPATH,
                 flow_data_filename=flow_data_fname,
                 T=T,
-                nb_flow=nb_flow,
                 len_closeness=len_closeness,
                 len_period=len_period,
                 len_trend=len_trend,
@@ -276,8 +286,10 @@ def main():
                 meta_data=use_meta,
                 weather_data=use_weather,
                 holiday_data=use_holidays,
+                tweet_count_data=use_tweet_counts,
                 weather_data_filename=weather_data_fname,
                 holiday_data_filename=holiday_data_fname,
+                tweet_count_data_filename=tweet_counts_data_fname,
                 use_mask=use_mask
             )
         if CACHEDATA:
