@@ -75,11 +75,11 @@ def run_experiment(ds_name):
                                                        ds_name,
                                                        len_interval)
     holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
-    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount.h5'.format(city_name,
-                                                                      ds_name,
-                                                                      map_width,
-                                                                      map_height,
-                                                                      len_interval)
+    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(city_name,
+                                                                        ds_name,
+                                                                        map_width,
+                                                                        map_height,
+                                                                        len_interval)
 
     # Make the folders and the respective paths if it does not already exists
     DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name

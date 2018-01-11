@@ -38,11 +38,11 @@ weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
                                                    ds_name,
                                                    len_interval)
 holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
-tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount.h5'.format(city_name,
-                                                                  ds_name,
-                                                                  map_width,
-                                                                  map_height,
-                                                                  len_interval)
+tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(city_name,
+                                                                    ds_name,
+                                                                    map_width,
+                                                                    map_height,
+                                                                    len_interval)
 CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path

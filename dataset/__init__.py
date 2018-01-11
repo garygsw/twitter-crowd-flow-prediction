@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import h5py
 from datetime import datetime
-from preprocessing import MinMaxNormalization, remove_incomplete_days, timestamp2vec, string2timestamp
+from preprocessing import MinMaxNormalization, timestamp2vec, string2timestamp
 
 
 class STMatrix(object):
@@ -250,9 +250,10 @@ def load_data(datapath, flow_data_filename=None, T=48,
     if tweet_count_data:
         tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
         f = h5py.File(tweet_count_path, 'r')
-        assert(timestamps[0] == f['date'].value[0])
+        assert(timestamps[0] == f['date'].value[1])  # due to lag
         assert(timestamps[-1] == f['date'].value[-1])
         tweet_counts = f['count'].value
+        tweet_counts = tweet_counts[:-1]  # throw away last
         f.close()
 
         # Normalize tweet counts
