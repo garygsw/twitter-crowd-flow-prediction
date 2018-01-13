@@ -228,6 +228,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
               len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
               tweet_count_data=False, tweet_count_data_filename=None,
+              tweet_norm=None,
               weather_data_filename=None, holiday_data_filename=None):
     assert(len_closeness + len_period + len_trend > 0)
     # Load the h5 file and retrieve data
@@ -247,7 +248,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
     data_mmn = np.array([mmn.transform(d) for d in flow_data])
 
     # Load tweet count data tile
-    if tweet_count_data:
+    if tweet_count_data and tweet_norm is not None:
         tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
         f = h5py.File(tweet_count_path, 'r')
         assert(timestamps[0] == f['date'].value[1])  # due to lag
@@ -257,24 +258,35 @@ def load_data(datapath, flow_data_filename=None, T=48,
         f.close()
 
         # Normalize tweet counts
-        hist_seq = {i: {} for i in range(7)}
-        for i, timestamp in enumerate(timestamps):
-            date, timeslot = timestamp.split('_')
-            weekday = datetime.strptime(date, '%Y%m%d').weekday()
-            count_matrix = tweet_counts[i]
-            hist_seq[weekday][timeslot] = hist_seq[weekday].get(timeslot, []) + \
-                [count_matrix]
-        hist_max = {i: {} for i in range(7)}
-        for weekday, timeslots in hist_seq.iteritems():
-            for t, matrix_seq in timeslots.iteritems():
-                hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
-        for i, timestamp in enumerate(timestamps):
-            date, timeslot = timestamp.split('_')
-            weekday = datetime.strptime(date, '%Y%m%d').weekday()
-            tweet_counts[i] = np.divide(tweet_counts[i],
-                                        hist_max[weekday][timeslot],
-                                        out=np.zeros_like(tweet_counts[i]),
-                                        where=hist_max[weekday][timeslot] != 0)
+        # tweet_count: (# of timeslots, h, w)
+        if tweet_norm == 'day+time':
+            hist_seq = {i: {} for i in range(7)}
+            for i, timestamp in enumerate(timestamps):
+                date, timeslot = timestamp.split('_')
+                weekday = datetime.strptime(date, '%Y%m%d').weekday()
+                count_matrix = tweet_counts[i]
+                hist_seq[weekday][timeslot] = hist_seq[weekday].get(
+                    timeslot, []) + [count_matrix]
+            hist_max = {i: {} for i in range(7)}
+            for weekday, timeslots in hist_seq.iteritems():
+                for t, matrix_seq in timeslots.iteritems():
+                    hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
+            for i, timestamp in enumerate(timestamps):
+                date, timeslot = timestamp.split('_')
+                weekday = datetime.strptime(date, '%Y%m%d').weekday()
+                tweet_counts[i] = np.divide(tweet_counts[i],
+                                            hist_max[weekday][timeslot],
+                                            out=np.zeros_like(tweet_counts[i]),
+                                            where=hist_max[weekday][timeslot] != 0)
+        elif tweet_norm == 'all':
+            max_counts = tweet_counts.max(axis=0)
+            for i, timestamp in enumerate(timestamps):
+                tweet_counts[i] = np.divide(tweet_counts[i],
+                                            max_counts,
+                                            out=np.zeros_like(tweet_counts[i]),
+                                            where=max_counts != 0)
+
+        # Insert the tweet counts dimension
         data_mmn = np.insert(data_mmn, 2, tweet_counts, axis=1)
 
     # save preprocessing stats

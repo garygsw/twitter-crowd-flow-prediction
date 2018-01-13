@@ -27,6 +27,7 @@ use_meta = True
 use_weather = True
 use_holidays = True
 use_tweet_counts = True
+tweet_norm = 'all'  # day+time
 len_interval = 30  # 30 minutes per time slot
 CACHEDATA = True                                # cache data or NOT
 nb_epoch = 500               # number of epoch at training stage
@@ -290,6 +291,7 @@ def run_experiment(ds_name):
                 weather_data_filename=weather_data_fname,
                 holiday_data_filename=holiday_data_fname,
                 tweet_count_data_filename=tweet_counts_data_fname,
+                tweet_norm=tweet_norm,
                 use_mask=use_mask
             )
         if CACHEDATA:

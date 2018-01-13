@@ -22,11 +22,12 @@ from dataset import load_data
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
 ds_name = 'VDLset1'  # dataset name
-map_height, map_width = 46, 87  # (23, 44) - 1km, (46, 87) - 500m
+map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
 use_meta = True
 use_weather = True
 use_holidays = True
 use_tweet_counts = True
+tweet_norm = 'all'  # day+time
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
 flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
@@ -290,6 +291,7 @@ def main():
                 weather_data_filename=weather_data_fname,
                 holiday_data_filename=holiday_data_fname,
                 tweet_count_data_filename=tweet_counts_data_fname,
+                tweet_norm=tweet_norm,
                 use_mask=use_mask
             )
         if CACHEDATA:
