@@ -21,10 +21,14 @@ class TweetRep(Layer):
         if K.dtype(x) != 'int32':
             x = K.cast(x, 'int32')
         W = K.gather(self.embeddings, x)    # get vectors at index of embeddings
-        V = K.sum(W, axis=-2)               # sum vectors for all words per grid
+        V = K.sum(W, axis=-2,)              # sum vectors for all words per grid
+        V = K.expand_dims(V, axis=-2)
+        V = K.repeat_elements(V, rep=1, axis=-1)
         b = W * V
         b = K.sum(b, axis=-1)
         c = softmax(b, axis=-1)  # to make sum of all weights to sum up to 1
+        c = K.expand_dims(c, axis=-1)
+        c = K.repeat_elements(c, rep=1, axis=-1)
         weighted_S = W * c
         weighted_S = K.sum(weighted_S, axis=-2)  # weighted sum
 
