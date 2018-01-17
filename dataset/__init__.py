@@ -510,10 +510,10 @@ def load_data(datapath, flow_data_filename=None, T=48,
         meta_feature_test = meta_feature[-len_test:]
         X_train.append(meta_feature_train)
         X_test.append(meta_feature_test)
-    type_map = {0: 'closeness', 1: 'period', 2: 'trend', 3: 'meta'}
+    # type_map = {0: 'closeness', 1: 'period', 2: 'trend', 3: 'meta'}
     for i, _X in enumerate(X_train):
-        logging.info('X train shape for %s ' % type_map[i] + ': ' + str(_X.shape))
+        logging.info('X train shape at index %s ' % i + ': ' + str(_X.shape))
     for i, _X in enumerate(X_test):
-        logging.info('X test shape for %s ' % type_map[i] + ': ' + str(_X.shape))
+        logging.info('X test shape at index %s ' % i + ': ' + str(_X.shape))
 
     return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test, mask
