@@ -62,7 +62,7 @@ initial_word_embeddings_fname = '{}_{}_{}d-embeddings.npy'.format(
     ds_name,
     embedding_size
 )
-CACHEDATA = True                                 # cache data or NOT
+CACHEDATA = False                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
@@ -96,6 +96,22 @@ model_fpath = 'model.png'
 use_mask = True
 warnings.filterwarnings('ignore')
 
+
+# Define filename of files based on meta, c, p & t parameters
+meta_info = []
+if use_meta and use_weather:
+    meta_info.append('W')
+if use_meta and use_holidays:
+    meta_info.append('H')
+if len(meta_info) > 1:
+    meta_info = '_Ext.' + '.'.join(meta_info)
+else:
+    meta_info = ''
+mask_info = '_masked' if use_mask else ''
+tweet_count_info = '_tweetcount' if use_tweet_counts else ''
+tweet_index_info = '_tweetindex' if use_tweet_index else ''
+
+
 # Make the folders and the respective paths if it does not already exists
 DS_DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
 if not os.path.isdir(path_hist):
@@ -123,19 +139,6 @@ if CACHEDATA:
         os.mkdir(path_cache)
     if not os.path.isdir(path_norm):
         os.mkdir(path_norm)
-    # Define filename of the cache data file based on meta, c, p & t parameters
-    meta_info = []
-    if use_meta and use_weather:
-        meta_info.append('W')
-    if use_meta and use_holidays:
-        meta_info.append('H')
-    if len(meta_info) > 1:
-        meta_info = '_Ext.' + '.'.join(meta_info)
-    else:
-        meta_info = ''
-    mask_info = '_masked' if use_mask else ''
-    tweet_count_info = '_tweetcount' if use_tweet_counts else ''
-    tweet_index_info = '_tweetindex' if use_tweet_index else ''
     cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
         city_name,
         ds_name,
