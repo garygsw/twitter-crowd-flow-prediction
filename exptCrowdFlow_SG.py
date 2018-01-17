@@ -28,9 +28,9 @@ use_weather = True
 use_holidays = True
 use_tweet_counts = False
 tweet_norm = 'all'  # day+time
-use_tweet_index = True
+use_tweet_index = False
 vocab_size = 300   # to be inside file?
-seq_size = 147     # to be inside file?
+seq_size = 50      # to be inside file?
 embedding_size = 25
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
@@ -57,9 +57,10 @@ tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.h5'.format(
     map_height,
     len_interval
 )
-initial_word_embeddings_fname = '{}_{}_{}d-embeddings.npy'.format(
+initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
     city_name,
     ds_name,
+    vocab_size,
     embedding_size
 )
 CACHEDATA = False                                # cache data or NOT
@@ -97,21 +98,6 @@ use_mask = True
 warnings.filterwarnings('ignore')
 
 
-# Define filename of files based on meta, c, p & t parameters
-meta_info = []
-if use_meta and use_weather:
-    meta_info.append('W')
-if use_meta and use_holidays:
-    meta_info.append('H')
-if len(meta_info) > 1:
-    meta_info = '_Ext.' + '.'.join(meta_info)
-else:
-    meta_info = ''
-mask_info = '_masked' if use_mask else ''
-tweet_count_info = '_tweetcount' if use_tweet_counts else ''
-tweet_index_info = '_tweetindex' if use_tweet_index else ''
-
-
 # Make the folders and the respective paths if it does not already exists
 DS_DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
 if not os.path.isdir(path_hist):
@@ -139,25 +125,42 @@ if CACHEDATA:
         os.mkdir(path_cache)
     if not os.path.isdir(path_norm):
         os.mkdir(path_norm)
-    cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
-        city_name,
-        ds_name,
-        map_width,
-        map_height,
-        len_interval,
-        len_closeness,
-        len_period,
-        len_trend,
-        meta_info,
-        mask_info,
-        tweet_count_info,
-        tweet_index_info,
-    )
-    cache_fpath = os.path.join(path_cache, cache_fname)
-    norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
-    norm_fpath = os.path.join(path_norm, norm_fname)
-    initial_embeddings_fpath = os.path.join(DS_DATAPATH,
-                                            initial_word_embeddings_fname)
+
+
+# Define filename of files based on meta, c, p & t parameters
+meta_info = []
+if use_meta and use_weather:
+    meta_info.append('W')
+if use_meta and use_holidays:
+    meta_info.append('H')
+if len(meta_info) > 1:
+    meta_info = '_Ext.' + '.'.join(meta_info)
+else:
+    meta_info = ''
+mask_info = '_masked' if use_mask else ''
+tweet_count_info = '_tweetcount' if use_tweet_counts else ''
+tweet_index_info = '_tweetindex' if use_tweet_index else ''
+
+cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
+    city_name,
+    ds_name,
+    map_width,
+    map_height,
+    len_interval,
+    len_closeness,
+    len_period,
+    len_trend,
+    meta_info,
+    mask_info,
+    tweet_count_info,
+    tweet_index_info,
+)
+cache_fpath = os.path.join(path_cache, cache_fname)
+norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
+norm_fpath = os.path.join(path_norm, norm_fname)
+initial_embeddings_fpath = os.path.join(DS_DATAPATH,
+                                        initial_word_embeddings_fname)
+
 
 # Define the file paths of the result and model files
 hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}'.format(
@@ -383,7 +386,7 @@ def main():
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=Y_test.shape[0] // T,
                            verbose=development_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
@@ -417,7 +420,7 @@ def main():
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=Y_test.shape[0] // T,
                            verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
