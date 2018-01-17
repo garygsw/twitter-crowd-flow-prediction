@@ -8,11 +8,13 @@ from keras.layers import (
     Activation,
     merge,
     Dense,
-    Reshape
+    Reshape,
+    Concatenate
 )
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
+from TweetRep import TweetRep
 
 
 def _shortcut(input, residual):
@@ -48,31 +50,53 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
              external_dim, nb_filters=64, kernal_size=(3, 3),
-             nb_residual_unit=2, use_tweet_counts=False):
+             nb_residual_unit=2, use_tweet_counts=False, use_tweet_index=False,
+             vocab_size=0, seq_size=0, initial_embeddings=None, embedding_size=0):
     '''
     C - Temporal Closeness
     P - Period
     T - Trend
     '''
 
-    kernal_w, kernal_h = kernal_size
-    if use_tweet_counts:
-        input_dim = 3
-    else:
-        input_dim = 2
-
-    # main input
+    # main inputs and outputs
     main_inputs = []
     outputs = []
+
+    kernal_w, kernal_h = kernal_size
+    input_dim = 2  # originally containing inflow and outflow
+    if use_tweet_counts:
+        input_dim += 1
+    if use_tweet_index:
+        # Tweet embedding
+        embedder = TweetRep(vocab_size=vocab_size,
+                            embedding_size=embedding_size,
+                            initial_weights=initial_embeddings)
+        concat = Concatenate(axis=1)
+
+    # flows input
     for len_seq in [len_closeness, len_period, len_trend]:
         if len_seq is not None:
-            input = Input(shape=(input_dim * len_seq, map_height, map_width))
-            main_inputs.append(input)
+            flow_input = Input(shape=(len_seq * input_dim,
+                                      map_height,
+                                      map_width))
+            main_inputs.append(flow_input)
+
+            if use_tweet_index:
+                tweet_input = Input(shape=(len_seq,
+                                           map_height,
+                                           map_width,
+                                           seq_size))
+                main_inputs.append(tweet_input)
+                embedded_tweets = embedder(tweet_input)
+                embedded_input = concat([flow_input, embedded_tweets])
+            else:
+                embedded_input = flow_input
+
             # Conv1
             conv1 = Convolution2D(nb_filter=nb_filters,
                                   nb_row=kernal_h,
                                   nb_col=kernal_w,
-                                  border_mode="same")(input)
+                                  border_mode="same")(embedded_input)
             # [nb_residual_unit] Residual Units
             residual_output = ResUnits(_residual_unit,
                                        nb_filter=nb_filters,
