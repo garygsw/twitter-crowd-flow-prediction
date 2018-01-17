@@ -398,13 +398,13 @@ def load_data(datapath, flow_data_filename=None, T=48,
     if tweet_index_data:
         tweet_index_data_path = os.path.join(datapath, tweet_index_data_filename)
         f = h5py.File(tweet_index_data_path, 'r')
-        tweet_index_data = f['index'].value
+        index_data = f['index'].value
         timestamps = f['date'].value
         # max_vocab = tweet_index.attrs['vocab_size']
         # m = tweet_index.attrs['m']
         f.close()
 
-        tm = TweetMatrix(tweet_index_data, timestamps, T, CheckComplete=False)
+        tm = TweetMatrix(index_data, timestamps, T, CheckComplete=False)
         TC, TP, TT, T_timestamps = tm.create_dataset(
             len_closeness=len_closeness,
             len_period=len_period,
