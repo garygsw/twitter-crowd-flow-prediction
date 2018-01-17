@@ -491,19 +491,36 @@ def load_data(datapath, flow_data_filename=None, T=48,
 
     # Combining the datasets into a list
     X_train = []
-    for l, X_, T_ in zip([len_closeness, len_period, len_trend],
-                         [XC_train, XP_train, XT_train],
-                         [TC_train, TP_train, TT_train]):
-        if l > 0:
-            X_train.append(X_)
-            X_train.append(T_)
     X_test = []
-    for l, X_, T_ in zip([len_closeness, len_period, len_trend],
-                         [XC_test, XP_test, XT_test],
-                         [TC_test, TP_test, TT_test]):
-        if l > 0:
-            X_test.append(X_)
-            X_test.append(T_)
+    if tweet_index_data:
+        train_datasets_list = zip([len_closeness, len_period, len_trend],
+                                  [XC_train, XP_train, XT_train],
+                                  [TC_train, TP_train, TT_train])
+        test_datasets_list = zip([len_closeness, len_period, len_trend],
+                                 [XC_test, XP_test, XT_test],
+                                 [TC_test, TP_test, TT_test])
+        for l, X_, T_ in train_datasets_list:
+            if l > 0:
+                X_train.append(X_)
+                X_train.append(T_)
+
+        for l, X_, T_ in test_datasets_list:
+            if l > 0:
+                X_test.append(X_)
+                X_test.append(T_)
+    else:
+        train_datasets_list = zip([len_closeness, len_period, len_trend],
+                                  [XC_train, XP_train, XT_train])
+        test_datasets_list = zip([len_closeness, len_period, len_trend],
+                                 [XC_test, XP_test, XT_test])
+
+        for l, X_ in train_datasets_list:
+            if l > 0:
+                X_train.append(X_)
+
+        for l, X_ in test_datasets_list:
+            if l > 0:
+                X_test.append(X_)
 
     if metadata_dim is not None:
         meta_feature_train = meta_feature[:-len_test]
