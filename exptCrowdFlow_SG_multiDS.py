@@ -22,14 +22,18 @@ from dataset import load_data
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
 datasets_name = ['VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']  # dataset name
-map_height, map_width = 46, 87  # (23, 44) - 1km, (46, 87) - 500m
+map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
+CACHEDATA = False                                # cache data or NOT
 use_meta = True
 use_weather = True
 use_holidays = True
-use_tweet_counts = True
+use_tweet_counts = False
 tweet_norm = 'all'  # day+time
+use_tweet_index = False
+vocab_size = 300   # to be inside file?
+seq_size = 50      # to be inside file?
+embedding_size = 25
 len_interval = 30  # 30 minutes per time slot
-CACHEDATA = True                                # cache data or NOT
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
 batch_size = 32              # batch size
@@ -61,29 +65,15 @@ warnings.filterwarnings('ignore')
 def run_experiment(ds_name):
     '''main function.'''
     DATAPATH = 'dataset'
+    path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
+    path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
     path_hist = 'HIST'                  # history path
     path_model = 'MODEL'                # model path
     path_log = 'LOG'                    # log path
     path_predictions = 'PRED'           # predictions path
-    path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
-    path_norm = os.path.join(DATAPATH, 'NORM')      # normalization path
-    flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
-                                                         ds_name,
-                                                         map_width,
-                                                         map_height,
-                                                         len_interval)
-    weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
-                                                       ds_name,
-                                                       len_interval)
-    holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
-    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(city_name,
-                                                                        ds_name,
-                                                                        map_width,
-                                                                        map_height,
-                                                                        len_interval)
 
     # Make the folders and the respective paths if it does not already exists
-    DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
+    DS_DATAPATH = os.path.join(DATAPATH, ds_name)  # add ds folder name
     if not os.path.isdir(path_hist):
         os.mkdir(path_hist)
     path_hist = os.path.join(path_hist, ds_name)
@@ -109,35 +99,72 @@ def run_experiment(ds_name):
             os.mkdir(path_cache)
         if not os.path.isdir(path_norm):
             os.mkdir(path_norm)
-        # Define filename of the cache data file based on meta, c, p & t parameters
-        meta_info = []
-        if use_meta and use_weather:
-            meta_info.append('W')
-        if use_meta and use_holidays:
-            meta_info.append('H')
-        if len(meta_info) > 1:
-            meta_info = '_Ext.' + '.'.join(meta_info)
-        else:
-            meta_info = ''
-        mask_info = '_masked' if use_mask else ''
-        tweet_info = '_tweetcount' if use_tweet_counts else ''
-        cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(city_name,
-                                                                     ds_name,
-                                                                     map_width,
-                                                                     map_height,
-                                                                     len_interval,
-                                                                     len_closeness,
-                                                                     len_period,
-                                                                     len_trend,
-                                                                     meta_info,
-                                                                     mask_info,
-                                                                     tweet_info)
-        cache_fpath = os.path.join(path_cache, cache_fname)
-        norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
-        norm_fpath = os.path.join(path_norm, norm_fname)
+
+    # Define filename of files based on meta, c, p & t parameters and more
+    meta_info = []
+    if use_meta and use_weather:
+        meta_info.append('W')
+    if use_meta and use_holidays:
+        meta_info.append('H')
+    if len(meta_info) > 1:
+        meta_info = '_Ext.' + '.'.join(meta_info)
+    else:
+        meta_info = ''
+    mask_info = '_masked' if use_mask else ''
+    tweet_count_info = '_tweetcount' if use_tweet_counts else ''
+    tweet_index_info = '_tweetindex' if use_tweet_index else ''
+
+    flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
+                                                         ds_name,
+                                                         map_width,
+                                                         map_height,
+                                                         len_interval)
+    weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
+                                                       ds_name,
+                                                       len_interval)
+    holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
+    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval
+    )
+    tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval
+    )
+    initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
+        city_name,
+        ds_name,
+        vocab_size,
+        embedding_size
+    )
+    cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        len_closeness,
+        len_period,
+        len_trend,
+        meta_info,
+        mask_info,
+        tweet_count_info,
+        tweet_index_info,
+    )
+    cache_fpath = os.path.join(path_cache, cache_fname)
+    norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
+    norm_fpath = os.path.join(path_norm, norm_fname)
+    initial_embeddings_fpath = os.path.join(DS_DATAPATH,
+                                            initial_word_embeddings_fname)
 
     # Define the file paths of the result and model files
-    hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}'.format(
+    hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}'.format(
         city_name,
         ds_name,
         map_width,
@@ -149,7 +176,9 @@ def run_experiment(ds_name):
         meta_info,
         mask_info,
         nb_residual_unit,
-        lr
+        lr,
+        tweet_count_info,
+        tweet_index_info
     )
     dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
     dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -182,7 +211,7 @@ def run_experiment(ds_name):
     root_logger.handlers = [fileHandler, consoleHandler]
 
 
-    def build_model(external_dim, loss, metric):
+    def build_model(external_dim, loss, metric, initial_word_embeddings=None):
         '''Define the model configuration and optimizer, and compiles it.'''
         c_conf = None if len_closeness <= 0 else len_closeness
         p_conf = None if len_period <= 0 else len_period
@@ -197,7 +226,12 @@ def run_experiment(ds_name):
                          nb_residual_unit=nb_residual_unit,
                          nb_filters=nb_filters,
                          kernal_size=kernal_size,
-                         use_tweet_counts=use_tweet_counts)
+                         use_tweet_counts=use_tweet_counts,
+                         use_tweet_index=use_tweet_index,
+                         vocab_size=vocab_size,
+                         seq_size=seq_size,
+                         embedding_size=embedding_size,
+                         initial_embeddings=initial_word_embeddings)
         adam = Adam(lr=lr)
         model.compile(loss=loss, optimizer=adam, metrics=[metric])
         model.summary()
@@ -274,7 +308,7 @@ def run_experiment(ds_name):
     else:
         X_train, Y_train, X_test, Y_test, mmn, external_dim, timestamp_train, \
             timestamp_test, mask = load_data(
-                datapath=DATAPATH,
+                datapath=DS_DATAPATH,
                 flow_data_filename=flow_data_fname,
                 T=T,
                 len_closeness=len_closeness,
@@ -292,6 +326,8 @@ def run_experiment(ds_name):
                 holiday_data_filename=holiday_data_fname,
                 tweet_count_data_filename=tweet_counts_data_fname,
                 tweet_norm=tweet_norm,
+                tweet_index_data=use_tweet_index,
+                tweet_index_data_filename=tweet_index_data_fname,
                 use_mask=use_mask
             )
         if CACHEDATA:
@@ -304,7 +340,15 @@ def run_experiment(ds_name):
     # use masked rmse if use_mask
     loss_function = metrics.masked_mse(mask) if use_mask else metrics.mse
     metric_function = metrics.masked_rmse(mask) if use_mask else metrics.rmse
-    model = build_model(external_dim, loss_function, metric_function)
+    if use_tweet_index:
+        # Read initial embeddings
+        initial_word_embeddings = np.load(initial_embeddings_fpath)
+    else:
+        initial_word_embeddings = None
+    model = build_model(external_dim,
+                        loss_function,
+                        metric_function,
+                        initial_word_embeddings)
     print_elasped(ts, 'model compilation')
 
     print_header("training model (development)...")

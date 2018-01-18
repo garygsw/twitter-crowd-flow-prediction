@@ -23,6 +23,7 @@ np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
 ds_name = 'VDLset1'  # dataset name
 map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
+CACHEDATA = False                                # cache data or NOT
 use_meta = True
 use_weather = True
 use_holidays = True
@@ -63,7 +64,6 @@ initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
     vocab_size,
     embedding_size
 )
-CACHEDATA = False                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
@@ -386,7 +386,7 @@ def main():
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0] // T,
+                           batch_size=Y_test.shape[0],
                            verbose=development_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
@@ -420,7 +420,7 @@ def main():
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0] // T,
+                           batch_size=Y_test.shape[0],
                            verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
