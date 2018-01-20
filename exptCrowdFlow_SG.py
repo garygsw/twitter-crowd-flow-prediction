@@ -29,7 +29,7 @@ use_weather = True
 use_holidays = True
 use_tweet_counts = False
 tweet_norm = 'all'  # day+time
-use_tweet_index = False
+use_tweet_index = True
 vocab_size = 300   # to be inside file?
 seq_size = 50      # to be inside file?
 embedding_size = 25
@@ -68,7 +68,7 @@ path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
-batch_size = 32              # batch size
+batch_size = 8               # batch size
 T = 24 * 60 / len_interval   # number of time intervals in one day
 lr = 0.0002                  # learning rate
 len_closeness = 4            # length of closeness dependent sequence
@@ -380,13 +380,13 @@ def main():
     model.load_weights(dev_weights_fpath)
     score = model.evaluate(X_train,
                            Y_train,
-                           batch_size=Y_train.shape[0] // T,  # batch by day
+                           batch_size=Y_train.shape[0] // 2, #// T,  # batch by day
                            verbose=development_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=Y_test.shape[0] // 2,
                            verbose=development_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
@@ -414,13 +414,13 @@ def main():
     ts = time.time()
     score = model.evaluate(X_train,
                            Y_train,
-                           batch_size=Y_train.shape[0] // T,  # batch by day
+                           batch_size=Y_train.shape[0] // 2, #// T,  # batch by day
                            verbose=full_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=Y_test.shape[0] // 2,
                            verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
