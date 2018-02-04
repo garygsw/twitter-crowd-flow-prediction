@@ -1,0 +1,56 @@
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 49, 89)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 49, 89)
+XC shape: (5520, 8, 49, 89)
+XP shape: (5520, 2, 49, 89)
+XT shape: (5520, 2, 49, 89)
+Y shape: (5520, 2, 49, 89)
+train set XC shape: (4176, 8, 49, 89)
+train set XP shape: (4176, 2, 49, 89)
+train set XT shape: (4176, 2, 49, 89)
+train set Y shape(4176, 2, 49, 89)
+test set XC shape: (1344, 8, 49, 89)
+test set XP shape: (1344, 2, 49, 89)
+test set XT shape: (1344, 2, 49, 89)
+test set Y shape: (1344, 2, 49, 89)
+total number of holidays/weekends: 1776.0
+windspeed shape: (5520,)
+weather shape: (5520, 8)
+temperature shape: (5520,)
+merged shape: (5520, 10)
+time feature shape: (5520, 8)
+holiday feature shape: (5520, 1)
+weather feature shape: (5520, 10)
+meta feature shape: (5520, 19)
+X train shape at index 0 : (4176, 8, 49, 89)
+X train shape at index 1 : (4176, 2, 49, 89)
+X train shape at index 2 : (4176, 2, 49, 89)
+X train shape at index 3 : (4176, 19)
+X test shape at index 0 : (1344, 8, 49, 89)
+X test shape at index 1 : (1344, 2, 49, 89)
+X test shape at index 2 : (1344, 2, 49, 89)
+X test shape at index 3 : (1344, 19)
+
+elapsed time (loading data): 36.243 seconds
+
+==========
+compiling model...
+
+
+elapsed time (model compilation): 4.786 seconds
+
+==========
+training model (development)...
+

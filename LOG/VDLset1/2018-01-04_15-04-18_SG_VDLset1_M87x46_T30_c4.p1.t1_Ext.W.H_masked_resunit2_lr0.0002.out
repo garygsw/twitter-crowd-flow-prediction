@@ -1,0 +1,11 @@
+==========
+loading data...
+
+reading dataset/CACHE/SG_VDLset1_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5...
+loaded dataset/CACHE/SG_VDLset1_M87x46_T30_c4.p1.t1_Ext.W.H_masked.h5 successfully
+
+elapsed time (loading data): 3.006 seconds
+
+==========
+compiling model...
+

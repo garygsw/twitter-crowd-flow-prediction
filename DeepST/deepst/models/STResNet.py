@@ -87,7 +87,13 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                            map_width,
                                            seq_size))
                 main_inputs.append(tweet_input)
+                #batch = K.shape(inverted_output)[0]
                 embedded_tweets = embedder(tweet_input)
+                print(embedded_tweets.shape)
+                #reduced_embedded1 = Dense(output_dim=map_width * map_height * 10)(embedded_tweets)
+                #reduced_embedded2 = Dense(output_dim=map_width * map_height * 10)(reduced_embedded1)
+                #reduced_embedded = K.reshape(reduced_embedded2, (map_width,)
+
                 embedded_input = concat([flow_input, embedded_tweets])
             else:
                 embedded_input = flow_input

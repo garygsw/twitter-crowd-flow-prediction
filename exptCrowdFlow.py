@@ -31,7 +31,7 @@ CACHEDATA = True                                # cache data or NOT
 path_cache = os.path.join(DATAPATH, 'CACHE')    # cache path
 nb_epoch = 10           # number of epoch at training stage
 nb_epoch_cont = 100     # number of epoch at training (cont) stage
-batch_size = 32         # batch size
+batch_size = 8          # batch size
 T = 48                  # number of time intervals in one day
 lr = 0.0002             # learning rate
 len_closeness = 4       # length of closeness dependent sequence
@@ -147,7 +147,7 @@ def main():
 
     print('=' * 10)
     print("compiling model...")
-    print("**at the first time, it takes a few minites to compile if you use [Theano] as the backend**")
+    print("**at the first time, it takes a few minutes to compile if you use [Theano] as the backend**")
 
     ts = time.time()
     model = build_model(external_dim)

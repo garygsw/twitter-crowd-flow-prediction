@@ -1,0 +1,5 @@
+venv/
+dataset/VDLset1
+dataset/CACHE/
+
+*.pyc

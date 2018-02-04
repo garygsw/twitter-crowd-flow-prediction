@@ -16,7 +16,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from deepst.models.STResNet import stresnet
 import deepst.metrics as metrics
-from dataset import load_data
+from dataset import load_data, DataGenerator
 
 # Input parameters
 np.random.seed(1337)  # for reproducibility
@@ -30,7 +30,7 @@ use_holidays = True
 use_tweet_counts = False
 tweet_norm = 'all'  # day+time
 use_tweet_index = False
-vocab_size = 300   # to be inside file?
+vocab_size = 100000   # to be inside file?
 seq_size = 50      # to be inside file?
 embedding_size = 25
 len_interval = 30  # 30 minutes per time slot
@@ -68,7 +68,7 @@ path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
-batch_size = 8               # batch size
+batch_size = 32               # batch size
 T = 24 * 60 / len_interval   # number of time intervals in one day
 lr = 0.0002                  # learning rate
 len_closeness = 4            # length of closeness dependent sequence
@@ -363,13 +363,33 @@ def main():
                                        verbose=checkpoint_verbose,
                                        save_best_only=True,
                                        mode='min')
-    history = model.fit(X_train,
-                        Y_train,
-                        epochs=nb_epoch,
-                        batch_size=batch_size,
-                        validation_split=validation_split,
-                        callbacks=[early_stopping, model_checkpoint],
-                        verbose=development_training_verbose)
+
+    data_generator = DataGenerator(X_train=X_train,
+                Y_train=Y_train,
+                X_test=X_test,
+                Y_test=Y_test,
+                validation_split=validation_split)
+
+    train_length = len(X_train[0]) * (1 - validation_split)
+    train_steps = train_length // batch_size
+    val_steps = (len(X_train[0]) * validation_split) // batch_size
+
+    history = model.fit_generator(generator=data_generator.generateTrain(batch_size),
+                            steps_per_epoch=train_steps,
+                            validation_data=data_generator.generateValidation(batch_size),
+                            validation_steps=val_steps,
+                            epochs=nb_epoch,
+                            callbacks=[early_stopping, model_checkpoint],
+                            verbose=development_training_verbose,
+                            shuffle=False,
+                            use_multiprocessing=True)
+    # history = model.fit(X_train,
+    #                     Y_train,
+    #                     epochs=nb_epoch,
+    #                     batch_size=batch_size,
+    #                     validation_split=validation_split,
+    #                     callbacks=[early_stopping, model_checkpoint],
+    #                     verbose=development_training_verbose)
     model.save_weights(dev_weights_fpath, overwrite=True)
     pickle.dump((history.history), open(dev_history_fpath, 'wb'))
     total_training_time = time.time() - ts
@@ -378,16 +398,22 @@ def main():
     print_header('evaluate the model that has the best loss on the valid set')
     ts = time.time()
     model.load_weights(dev_weights_fpath)
-    score = model.evaluate(X_train,
-                           Y_train,
-                           batch_size=Y_train.shape[0] // 2, #// T,  # batch by day
-                           verbose=development_evaluate_verbose)
+
+    eval_steps = int(len(X_train[0])/(Y_train.shape[0] // 2))
+    score = model.evaluate_generator(generator=data_generator.generateTrain(batch_size=(Y_train.shape[0] // 2)), steps=eval_steps) # batch by day
+    # score = model.evaluate(X_train,
+    #                        Y_train,
+    #                        batch_size=Y_train.shape[0], #// T,  # batch by day
+    #                        verbose=development_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
-    score = model.evaluate(X_test,
-                           Y_test,
-                           batch_size=Y_test.shape[0] // 2,
-                           verbose=development_evaluate_verbose)
+
+    eval_steps = int(len(X_test[0])/(Y_test.shape[0] // 2))
+    score = model.evaluate_generator(generator=data_generator.generateTest(batch_size=(Y_test.shape[0] // 2)), steps=eval_steps) # batch by day
+    # score = model.evaluate(X_test,
+    #                        Y_test,
+    #                        batch_size=Y_test.shape[0],
+    #                        verbose=development_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     print_elasped(ts, 'development evaluation')
@@ -399,12 +425,21 @@ def main():
                                        verbose=checkpoint_verbose,
                                        save_best_only=True,
                                        mode='min')
-    history = model.fit(X_train,
-                        Y_train,
-                        epochs=nb_epoch_cont,
-                        verbose=full_training_verbose,
-                        batch_size=batch_size,
-                        callbacks=[model_checkpoint])
+
+    history = model.fit_generator(generator=data_generator.generateTrain(batch_size),
+                                steps_per_epoch=train_steps,
+                                validation_data=data_generator.generateValidation(batch_size),
+                                validation_steps=val_steps,
+                                epochs=nb_epoch_cont,
+                                callbacks=[model_checkpoint],
+	                            verbose=full_training_verbose,
+                                shuffle=False)
+    # history = model.fit(X_train,
+    #                     Y_train,
+    #                     epochs=nb_epoch_cont,
+    #                     verbose=full_training_verbose,
+    #                     batch_size=batch_size,
+    #                     callbacks=[model_checkpoint])
     pickle.dump((history.history), open(full_history_fpath, 'wb'))
     model.save_weights(full_weights_fpath, overwrite=True)
     total_training_time += time.time() - ts
@@ -412,22 +447,29 @@ def main():
 
     print_header('evaluating using the final model')
     ts = time.time()
-    score = model.evaluate(X_train,
-                           Y_train,
-                           batch_size=Y_train.shape[0] // 2, #// T,  # batch by day
-                           verbose=full_evaluate_verbose)
+
+    eval_steps = int(len(X_train[0])/(Y_train.shape[0] // 2))
+    score = model.evaluate_generator(generator=data_generator.generateTrain(batch_size=(Y_train.shape[0] // 2)), steps=eval_steps) # batch by day
+    # score = model.evaluate(X_train,
+    #                        Y_train,
+    #                        batch_size=Y_train.shape[0], #// T,  # batch by day
+    #                        verbose=full_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
-    score = model.evaluate(X_test,
-                           Y_test,
-                           batch_size=Y_test.shape[0] // 2,
-                           verbose=full_evaluate_verbose)
+
+    eval_steps = int(len(X_test[0])/(Y_test.shape[0] // 2))
+    score = model.evaluate_generator(generator=data_generator.generateTest(batch_size=(Y_test.shape[0] // 2)), steps=eval_steps) # batch by day
+    # score = model.evaluate(X_test,
+    #                        Y_test,
+    #                        batch_size=Y_test.shape[0],
+    #                        verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     print_elasped(ts, 'full evaluation')
 
     # saves the prediction results
-    predictions = model.predict(X_test)
+    # predictions = model.predict(X_test)
+    predictions = model.predict_generator(generator=data_generator.generatePredict(), steps=int(len(X_test[0])/32))
     logging.info('Predictions shape: ' + str(predictions.shape))
     logging.info('Test shape: ' + str(Y_test.shape))
     np.save(predictions_fpath, predictions)

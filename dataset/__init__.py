@@ -534,3 +534,60 @@ def load_data(datapath, flow_data_filename=None, T=48,
         logging.info('X test shape at index %s ' % i + ': ' + str(_X.shape))
 
     return X_train, Y_train, X_test, Y_test, mmn, metadata_dim, timestamp_train, timestamp_test, mask
+
+class DataGenerator(object):
+    def __init__(self, X_train, Y_train, X_test, Y_test, validation_split):
+        self.X_train = X_train
+        self.Y_train = Y_train
+        self.X_test = X_test
+        self.Y_test = Y_test
+        self.validation_split = validation_split
+
+    def generateTrain(self, batch_size):
+        # Generates training data
+        while True: # TODO: change to num_epochs?
+            # Generate batches
+            max_index = int(len(self.X_train[0]) * (1 - self.validation_split) // batch_size)
+            # print("max_index: {0}".format(max_index))
+            for i in range(max_index):
+                # Generate data
+                print("Generating from {0} to {1}".format(i*batch_size, (i+1)*batch_size))
+                X_train = [self.X_train[j][i*batch_size : (i+1)*batch_size] for j in range(len(self.X_train))]
+                Y_train = self.Y_train[i*batch_size : (i+1)*batch_size]
+
+                yield X_train, Y_train
+
+    def generateValidation(self, batch_size):
+        # Generates validation data
+        while True:
+            # Generate batches
+            start_index = int(len(self.X_train[0]) * (1 - self.validation_split) // batch_size)
+            end_index = int(len(self.X_train[0]) // batch_size)
+            for i in range(start_index, end_index):
+                # Generate data
+                X_val = [self.X_train[j][i*batch_size : (i+1)*batch_size] for j in range(len(self.X_train))]
+                Y_val = self.Y_train[i*batch_size : (i+1)*batch_size]
+
+                yield X_val, Y_val
+
+    def generateTest(self, batch_size):
+        # Generates test data
+        while True:
+            max_index = int(len(self.X_test[0]) // batch_size)
+            for i in range(max_index):
+                # Generate data
+                X_test = [self.X_test[j][i*batch_size : (i+1)*batch_size] for j in range(len(self.X_test))]
+                Y_test = self.Y_test[i*batch_size : (i+1)*batch_size]
+
+                yield X_test, Y_test     
+
+    def generatePredict(self, batch_size=32): # Defaults to 32 similar to model.predict()
+        # Generates test data
+        while True:
+            max_index = int(len(self.X_test[0]) // batch_size)
+            for i in range(max_index):
+                # Generate data
+                X_test = [self.X_test[j][i*batch_size : (i+1)*batch_size] for j in range(len(self.X_test))]
+                Y_test = self.Y_test[i*batch_size : (i+1)*batch_size]
+
+                yield X_test

@@ -3,6 +3,7 @@ from keras.activations import softmax
 from keras.engine.topology import Layer
 import numpy as np
 
+
 class TweetRep(Layer):
     def __init__(self, vocab_size, embedding_size, initial_weights=None, **kwargs):
         super(TweetRep, self).__init__(**kwargs)
@@ -35,6 +36,7 @@ class TweetRep(Layer):
         inverted_output = K.permute_dimensions(weighted_S, (0, 1, 4, 2, 3))
         # batch, seq, k, h, w
         shape = K.shape(inverted_output)
+
         # stack up the sequences
         output = K.reshape(inverted_output,
                            (shape[0], shape[1] * shape[2], shape[3], shape[4]))

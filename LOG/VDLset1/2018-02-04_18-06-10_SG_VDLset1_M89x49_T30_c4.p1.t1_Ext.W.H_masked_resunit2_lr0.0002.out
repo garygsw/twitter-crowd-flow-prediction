@@ -1,0 +1,15 @@
+==========
+loading data...
+
+=====stat=====
+data shape: (5856, 2, 49, 89)
+# of days: 122, from 2013-03-01 to 2013-06-30
+# of timeslots: 5856
+# of timeslots (available): 5856
+missing ratio of timeslots: 0.0%
+max: 166629.000, min: 0.000
+# of valid inflow cells: 842
+# of valid outflow cells: 893
+=====stat=====
+
+train_data shape: (4512, 2, 49, 89)
