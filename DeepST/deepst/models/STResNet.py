@@ -49,7 +49,7 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 
 
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
-             external_dim, nb_filters=64, kernal_size=(3, 3),
+             external_dim, nb_filters=64, kernal_size=(3, 3), len_tweetcount=0,
              nb_residual_unit=2, use_tweet_counts=False, use_tweet_index=False,
              vocab_size=0, seq_size=0, initial_embeddings=None, embedding_size=0):
     '''
@@ -63,9 +63,9 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
     outputs = []
 
     kernal_w, kernal_h = kernal_size
-    input_dim = 2  # originally containing inflow and outflow
-    if use_tweet_counts:
-        input_dim += 1
+    input_dim = 2  # inflow and outflow
+    # if use_tweet_counts:
+    #     input_dim += 1
     if use_tweet_index:
         # Tweet embedding
         embedder = TweetRep(vocab_size=vocab_size,
@@ -74,11 +74,16 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
         concat = Concatenate(axis=1)
 
     # flows input
-    for len_seq in [len_closeness, len_period, len_trend]:
+    for i, len_seq in enumerate([len_closeness, len_period, len_trend]):
         if len_seq is not None:
-            flow_input = Input(shape=(len_seq * input_dim,
-                                      map_height,
-                                      map_width))
+            if i == 0 and use_tweet_counts and len_tweetcount > 0:
+                flow_input = Input(shape=(len_seq * input_dim + len_tweetcount,
+                                          map_height,
+                                          map_width))
+            else:
+                flow_input = Input(shape=(len_seq * input_dim,
+                                          map_height,
+                                          map_width))
             main_inputs.append(flow_input)
 
             if use_tweet_index:
@@ -87,12 +92,7 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                            map_width,
                                            seq_size))
                 main_inputs.append(tweet_input)
-                #batch = K.shape(inverted_output)[0]
                 embedded_tweets = embedder(tweet_input)
-                #reduced_embedded1 = Dense(output_dim=map_width * map_height * 10)(embedded_tweets)
-                #reduced_embedded2 = Dense(output_dim=map_width * map_height * 10)(reduced_embedded1)
-                #reduced_embedded = K.reshape(reduced_embedded2, (map_width,)
-
                 embedded_input = concat([flow_input, embedded_tweets])
             else:
                 embedded_input = flow_input

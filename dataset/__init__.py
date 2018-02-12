@@ -61,7 +61,7 @@ class STMatrix(object):
         return True
 
     def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
-                       len_period=3, PeriodInterval=1, use_tweet_counts=False):
+                       len_period=3, PeriodInterval=1, len_tweetcount=0):
         """current version
         """
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
@@ -70,14 +70,16 @@ class STMatrix(object):
         XT = []
         Y = []
         timestamps_Y = []
+
         # Generate a list of all look back time stamps
-        depends = [range(1, len_closeness + 1),
+        depends = [range(1, len_tweetcount + 1),
+                   range(1, len_closeness + 1),
                    [PeriodInterval * self.T * j
                     for j in range(1, len_period + 1)],
                    [TrendInterval * self.T * j
                     for j in range(1, len_trend + 1)]]
 
-        # Finding maximum look back in time per step
+        # Finding maximum look back in time per step (for period and trend only)
         i = max(self.T * TrendInterval * len_trend,
                 self.T * PeriodInterval * len_period,
                 len_closeness)
@@ -90,26 +92,37 @@ class STMatrix(object):
                 Flag = self.check_it([self.pd_timestamps[i] - j * offset_frame
                                       for j in depend])
 
-            if Flag is False:
+            if Flag is False:  # roll forward until the first prediciton time step
                 i += 1
                 continue
 
+            x_tc = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
+                    for j in depends[0]]
             x_c = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
-                   for j in depends[0]]
-            x_p = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
                    for j in depends[1]]
-            x_t = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
+            x_p = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
                    for j in depends[2]]
+            x_t = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
+                   for j in depends[3]]
 
+            if len_tweetcount > 0:
+                x_tc = [matrix[2, :, :] for matrix in x_tc]
+                x_tc = np.array([sum(x_tc)])
+                # remove tweet counts in flows
+                x_c = [matrix[:2, :, :] for matrix in x_c]
+                x_p = [matrix[:2, :, :] for matrix in x_p]
+                x_t = [matrix[:2, :, :] for matrix in x_t]
             if len_closeness > 0:
-                XC.append(np.vstack(x_c))
+                if len_tweetcount > 0:
+                    x_c.append(x_tc)
+                XC.append(np.concatenate(x_c))
             if len_period > 0:
                 XP.append(np.vstack(x_p))
             if len_trend > 0:
                 XT.append(np.vstack(x_t))
 
             y = self.get_matrix(self.pd_timestamps[i])
-            if use_tweet_counts:  # remove tweet counts in Y
+            if len_tweetcount > 0:  # remove tweet counts in Y
                 y = y[:2, :, :]
             Y.append(y)
 
@@ -303,8 +316,8 @@ def load_weather(timeslots, datapath):
 
 def load_data(datapath, flow_data_filename=None, T=48,
               len_closeness=None, len_period=None, len_trend=None,
-              period_interval=1, trend_interval=7, use_mask=False,
-              len_test=None, norm_name=None, meta_data=False,
+              len_tweetcount=None, period_interval=1, trend_interval=7,
+              use_mask=False, len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
               tweet_count_data=False, tweet_index_data=False,
               tweet_count_data_filename=None,
@@ -328,7 +341,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
     data_mmn = np.array([mmn.transform(d) for d in flow_data])
 
     # Load tweet count data tile
-    if tweet_count_data and tweet_norm is not None:
+    if tweet_count_data and len_tweetcount is not None and tweet_norm is not None:
         tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
         f = h5py.File(tweet_count_path, 'r')
         assert(timestamps[0] == f['date'].value[1])  # due to lag
@@ -386,9 +399,9 @@ def load_data(datapath, flow_data_filename=None, T=48,
         len_closeness=len_closeness,
         len_period=len_period,
         len_trend=len_trend,
+        len_tweetcount=len_tweetcount,
         PeriodInterval=period_interval,
-        TrendInterval=trend_interval,
-        use_tweet_counts=tweet_count_data,
+        TrendInterval=trend_interval
     )
     logging.info("XC shape: " + str(XC.shape))
     logging.info("XP shape: " + str(XP.shape))

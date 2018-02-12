@@ -27,7 +27,7 @@ CACHEDATA = False                             # cache data or NOT
 use_meta = True
 use_weather = True
 use_holidays = True
-use_tweet_counts = False
+use_tweet_counts = True
 tweet_norm = 'all'  # day+time
 use_tweet_index = False
 vocab_size = 100000   # to be inside file?
@@ -74,6 +74,7 @@ lr = 0.0002                  # learning rate
 len_closeness = 4            # length of closeness dependent sequence
 len_period = 1               # length of peroid dependent sequence
 len_trend = 1                # length of trend dependent sequence
+len_tweetcount = 1           # length of tweet counts dependent sequence
 nb_residual_unit = 2         # number of residual units
 period_interval = 1          # period interval length (in days)
 trend_interval = 7           # period interval length (in days)
@@ -215,12 +216,14 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
     c_conf = None if len_closeness <= 0 else len_closeness
     p_conf = None if len_period <= 0 else len_period
     t_conf = None if len_trend <= 0 else len_trend
+    tc_conf = None if len_tweetcount <= 0 else len_tweetcount
 
     model = stresnet(map_height=map_height,
                      map_width=map_width,
                      len_closeness=c_conf,
                      len_period=p_conf,
                      len_trend=t_conf,
+                     len_tweetcount=tc_conf,
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit,
                      nb_filters=nb_filters,
@@ -317,6 +320,7 @@ def main():
                 len_closeness=len_closeness,
                 len_period=len_period,
                 len_trend=len_trend,
+                len_tweetcount=len_tweetcount,
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
