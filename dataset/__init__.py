@@ -193,7 +193,7 @@ class TweetMatrix(STMatrix):
         return TC, TP, TT, timestamps_Y
 
 
-def stat(fname):
+def stat(fname, T):
     def get_nb_timeslot(f):
         s = f['date'][0]   # start date
         e = f['date'][-1]  # end date
@@ -201,13 +201,13 @@ def stat(fname):
         ts = time.strptime("%04i-%02i-%02i" % (year, month, day), "%Y-%m-%d")
         year, month, day = map(int, [e[:4], e[4:6], e[6:8]])
         te = time.strptime("%04i-%02i-%02i" % (year, month, day), "%Y-%m-%d")
-        nb_timeslot = (time.mktime(te) - time.mktime(ts)) / (0.5 * 3600) + 48
+        nb_timeslot = ((time.mktime(te) - time.mktime(ts)) / 86400 + 1) * T
         ts_str, te_str = time.strftime("%Y-%m-%d", ts), time.strftime("%Y-%m-%d", te)
         return nb_timeslot, ts_str, te_str
 
     with h5py.File(fname) as f:
         nb_timeslot, ts_str, te_str = get_nb_timeslot(f)
-        nb_day = int(nb_timeslot / 48)
+        nb_day = int(nb_timeslot / T)
         mmax = f['data'].value.max()
         mmin = f['data'].value.min()
         single_mask = f['mask'].value
@@ -313,7 +313,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
     assert(len_closeness + len_period + len_trend > 0)
     # Load the h5 file and retrieve data
     flow_data_path = os.path.join(datapath, flow_data_filename)
-    stat(flow_data_path)
+    stat(flow_data_path, T)
     f = h5py.File(flow_data_path, 'r')
     flow_data = f['data'].value
     timestamps = f['date'].value
