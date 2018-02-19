@@ -1,12 +1,13 @@
 import os
 import time
 import logging
-import pickle
+import cPickle as pickle
 from copy import copy
 import pandas as pd
 import numpy as np
 import h5py
 from datetime import datetime
+import scipy.sparse
 from preprocessing import MinMaxNormalization, timestamp2vec, string2timestamp
 
 
@@ -61,7 +62,8 @@ class STMatrix(object):
         return True
 
     def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
-                       len_period=3, PeriodInterval=1, len_tweetcount=0):
+                       len_period=3, PeriodInterval=1, len_tweetcount=0,
+                       use_tweet_counts=False):
         """current version
         """
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
@@ -105,7 +107,7 @@ class STMatrix(object):
             x_t = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
                    for j in depends[3]]
 
-            if len_tweetcount > 0:
+            if use_tweet_counts and len_tweetcount > 0:
                 x_tc = [matrix[2, :, :] for matrix in x_tc]
                 x_tc = np.array([sum(x_tc)])
                 # remove tweet counts in flows
@@ -113,7 +115,7 @@ class STMatrix(object):
                 x_p = [matrix[:2, :, :] for matrix in x_p]
                 x_t = [matrix[:2, :, :] for matrix in x_t]
             if len_closeness > 0:
-                if len_tweetcount > 0:
+                if use_tweet_counts and len_tweetcount > 0:
                     x_c.append(x_tc)
                 XC.append(np.concatenate(x_c))
             if len_period > 0:
@@ -152,19 +154,13 @@ class TweetMatrix(STMatrix):
         self.make_index()
 
     def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
-                       len_period=3, PeriodInterval=1):
+                       len_period=3, PeriodInterval=1, len_tweets=1):
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
-        TC = []
-        TP = []
-        TT = []
+        TI = []
         timestamps_Y = []
 
         # Generate a list of all look back time stamps
-        depends = [range(1, len_closeness + 1),
-                   [PeriodInterval * self.T * j
-                    for j in range(1, len_period + 1)],
-                   [TrendInterval * self.T * j
-                    for j in range(1, len_trend + 1)]]
+        depend = range(1, len_tweets + 1)
 
         # Finding maximum look back in time per step
         i = max(self.T * TrendInterval * len_trend,
@@ -172,38 +168,24 @@ class TweetMatrix(STMatrix):
                 len_closeness)
 
         while i < len(self.pd_timestamps):
-            Flag = True
-            for depend in depends:
-                if Flag is False:
-                    break
-                Flag = self.check_it([self.pd_timestamps[i] - j * offset_frame
-                                      for j in depend])
-
+            Flag = self.check_it([self.pd_timestamps[i] - j * offset_frame
+                                  for j in depend])
             if Flag is False:
                 i += 1
                 continue
 
-            t_c = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
-                   for j in depends[0]]
-            t_p = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
-                   for j in depends[1]]
-            t_t = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
-                   for j in depends[2]]
+            t_ti = [self.get_matrix(self.pd_timestamps[i] - j * offset_frame)
+                    for j in depend]
 
             if len_closeness > 0:
-                TC.append(t_c)
-            if len_period > 0:
-                TP.append(t_p)
-            if len_trend > 0:
-                TT.append(t_t)
+                if len_tweets > 0:
+                    TI.append(scipy.sparse.vstack(t_ti))
 
             timestamps_Y.append(self.timestamps[i])
             i += 1
 
-        TC = np.asarray(TC)
-        TP = np.asarray(TP)
-        TT = np.asarray(TT)
-        return TC, TP, TT, timestamps_Y
+        TI = np.asarray(TI)
+        return TI, timestamps_Y, TI[0].shape
 
 
 def stat(fname, T):
@@ -316,7 +298,7 @@ def load_weather(timeslots, datapath):
 
 def load_data(datapath, flow_data_filename=None, T=48,
               len_closeness=None, len_period=None, len_trend=None,
-              len_tweetcount=None, period_interval=1, trend_interval=7,
+              len_tweets=None, period_interval=1, trend_interval=7,
               use_mask=False, len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
               tweet_count_data=False, tweet_index_data=False,
@@ -335,13 +317,15 @@ def load_data(datapath, flow_data_filename=None, T=48,
 
     # minmax_scale
     data_train = copy(flow_data)[:-len_test]
-    logging.info('train_data shape: ' + str(data_train.shape))
+    logging.info('flows training data shape: ' + str(data_train.shape))
     mmn = MinMaxNormalization()
+    logging.info('normalizing flows training data...')
     mmn.fit(data_train)
     data_mmn = np.array([mmn.transform(d) for d in flow_data])
 
     # Load tweet count data tile
-    if tweet_count_data and len_tweetcount is not None and tweet_norm is not None:
+    if tweet_count_data and len_tweets is not None and tweet_norm is not None:
+        logging.info('reading tweet counts data...')
         tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
         f = h5py.File(tweet_count_path, 'r')
         assert(timestamps[0] == f['date'].value[1])  # due to lag
@@ -395,41 +379,49 @@ def load_data(datapath, flow_data_filename=None, T=48,
     # instance-based dataset --> sequences with format as (X, Y) where X is
     # a sequence of images and Y is an image.
     st = STMatrix(data_mmn, timestamps, T, CheckComplete=False)
+    logging.info('creating training and tests flow inputs...')
     XC, XP, XT, Y, timestamps_Y = st.create_dataset(
         len_closeness=len_closeness,
         len_period=len_period,
         len_trend=len_trend,
-        len_tweetcount=len_tweetcount,
+        len_tweetcount=len_tweets,
         PeriodInterval=period_interval,
-        TrendInterval=trend_interval
+        TrendInterval=trend_interval,
+        use_tweet_counts=tweet_count_data
     )
     logging.info("XC shape: " + str(XC.shape))
     logging.info("XP shape: " + str(XP.shape))
     logging.info("XT shape: " + str(XT.shape))
     logging.info("Y shape: " + str(Y.shape))
 
-    if tweet_index_data:
+    if tweet_index_data and len_tweets is not None:
+        logging.info('reading tweet index data...')
         tweet_index_data_path = os.path.join(datapath, tweet_index_data_filename)
-        f = h5py.File(tweet_index_data_path, 'r')
-        index_data = f['index'].value
-        timestamps = f['date'].value
+        #f = h5py.File(tweet_index_data_path, 'r')
+        #index_data = f['index'].value
+        #timestamps = f['date'].value
+        index_data = np.load(tweet_index_data_path)
+        timestamps = index_data.keys()
+        timestamps = sorted(timestamps)
+        tweet_index_values = [index_data[k].tolist() for k in timestamps]
+
+        #timestamps, index_data = pickle.load(open(tweet_index_data_path, 'rb'))
         # max_vocab = tweet_index.attrs['vocab_size']
         # m = tweet_index.attrs['m']
-        f.close()
+        #f.close()
 
-        tm = TweetMatrix(index_data, timestamps, T, CheckComplete=False)
-        TC, TP, TT, T_timestamps = tm.create_dataset(
+        tm = TweetMatrix(tweet_index_values, timestamps, T, CheckComplete=False)
+        TI, T_timestamps, TI_shape, = tm.create_dataset(
             len_closeness=len_closeness,
             len_period=len_period,
             len_trend=len_trend,
+            len_tweets=len_tweets,
             PeriodInterval=period_interval,
             TrendInterval=trend_interval
         )
         assert(T_timestamps[0] == timestamps_Y[0])
         assert(T_timestamps[-1] == timestamps_Y[-1])
-        logging.info("TC shape: " + str(TC.shape))
-        logging.info("TP shape: " + str(TP.shape))
-        logging.info("TT shape: " + str(TT.shape))
+        logging.info("TI shape: " + str(TI.shape + TI_shape))
 
     # Segment the training set
     XC_train = XC[:-len_test]
@@ -442,12 +434,12 @@ def load_data(datapath, flow_data_filename=None, T=48,
     logging.info('train set XT shape: ' + str(XT_train.shape))
     logging.info('train set Y shape' + str(Y_train.shape))
     if tweet_index_data:
-        TC_train = TC[:-len_test]
-        TP_train = TP[:-len_test]
-        TT_train = TT[:-len_test]
-        logging.info('train set TC shape: ' + str(TC_train.shape))
-        logging.info('train set TP shape: ' + str(TP_train.shape))
-        logging.info('train set TT shape: ' + str(TT_train.shape))
+        TI_train = TI[:-len_test]
+        # TP_train = TP[:-len_test]
+        # TT_train = TT[:-len_test]
+        logging.info('train set TI shape: ' + str(TI_train.shape + TI_shape))
+        #logging.info('train set TP shape: ' + str(TP_train.shape))
+        #logging.info('train set TT shape: ' + str(TT_train.shape))
 
     # Segment the test set
     XC_test = XC[-len_test:]
@@ -460,12 +452,12 @@ def load_data(datapath, flow_data_filename=None, T=48,
     logging.info('test set XT shape: ' + str(XT_test.shape))
     logging.info('test set Y shape: ' + str(Y_test.shape))
     if tweet_index_data:
-        TC_test = TC[-len_test:]
-        TP_test = TP[-len_test:]
-        TT_test = TT[-len_test:]
-        logging.info('test set TC shape: ' + str(TC_test.shape))
-        logging.info('test set TP shape: ' + str(TP_test.shape))
-        logging.info('test set TT shape: ' + str(TT_test.shape))
+        TI_test = TI[-len_test:]
+        # TP_test = TP[-len_test:]
+        # TT_test = TT[-len_test:]
+        # logging.info('test set TC shape: ' + str(TC_test.shape))
+        # logging.info('test set TP shape: ' + str(TP_test.shape))
+        logging.info('test set TI shape: ' + str(TI_test.shape + TI_shape))
 
     # Prepare the external component
     meta_feature = []
@@ -505,35 +497,51 @@ def load_data(datapath, flow_data_filename=None, T=48,
     # Combining the datasets into a list
     X_train = []
     X_test = []
+    train_datasets_list = zip([len_closeness, len_period, len_trend],
+                              [XC_train, XP_train, XT_train])
+    test_datasets_list = zip([len_closeness, len_period, len_trend],
+                             [XC_test, XP_test, XT_test])
+
+    for l, X_ in train_datasets_list:
+        if l > 0:
+            X_train.append(X_)
     if tweet_index_data:
-        train_datasets_list = zip([len_closeness, len_period, len_trend],
-                                  [XC_train, XP_train, XT_train],
-                                  [TC_train, TP_train, TT_train])
-        test_datasets_list = zip([len_closeness, len_period, len_trend],
-                                 [XC_test, XP_test, XT_test],
-                                 [TC_test, TP_test, TT_test])
-        for l, X_, T_ in train_datasets_list:
-            if l > 0:
-                X_train.append(X_)
-                X_train.append(T_)
+        X_train.append(TI_train)
 
-        for l, X_, T_ in test_datasets_list:
-            if l > 0:
-                X_test.append(X_)
-                X_test.append(T_)
-    else:
-        train_datasets_list = zip([len_closeness, len_period, len_trend],
-                                  [XC_train, XP_train, XT_train])
-        test_datasets_list = zip([len_closeness, len_period, len_trend],
-                                 [XC_test, XP_test, XT_test])
-
-        for l, X_ in train_datasets_list:
-            if l > 0:
-                X_train.append(X_)
-
-        for l, X_ in test_datasets_list:
-            if l > 0:
-                X_test.append(X_)
+    for l, X_ in test_datasets_list:
+        if l > 0:
+            X_test.append(X_)
+    if tweet_index_data:
+        X_test.append(TI_test)
+    # if tweet_index_data:
+    #     train_datasets_list = zip([len_closeness, len_period, len_trend],
+    #                               [XC_train, XP_train, XT_train],
+    #                               [TC_train, TP_train, TT_train])
+    #     test_datasets_list = zip([len_closeness, len_period, len_trend],
+    #                              [XC_test, XP_test, XT_test],
+    #                              [TC_test, TP_test, TT_test])
+    #     for l, X_, T_ in train_datasets_list:
+    #         if l > 0:
+    #             X_train.append(X_)
+    #             X_train.append(T_)
+    #
+    #     for l, X_, T_ in test_datasets_list:
+    #         if l > 0:
+    #             X_test.append(X_)
+    #             X_test.append(T_)
+    # else:
+    #     train_datasets_list = zip([len_closeness, len_period, len_trend],
+    #                               [XC_train, XP_train, XT_train])
+    #     test_datasets_list = zip([len_closeness, len_period, len_trend],
+    #                              [XC_test, XP_test, XT_test])
+    #
+    #     for l, X_ in train_datasets_list:
+    #         if l > 0:
+    #             X_train.append(X_)
+    #
+    #     for l, X_ in test_datasets_list:
+    #         if l > 0:
+    #             X_test.append(X_)
 
     if metadata_dim is not None:
         meta_feature_train = meta_feature[:-len_test]

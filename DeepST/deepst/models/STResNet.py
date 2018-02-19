@@ -9,11 +9,13 @@ from keras.layers import (
     merge,
     Dense,
     Reshape,
-    Concatenate
+    Concatenate,
+    Lambda
 )
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
+from keras import backend as K
 from TweetRep import TweetRep
 
 
@@ -49,9 +51,10 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 
 
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
-             external_dim, nb_filters=64, kernal_size=(3, 3), len_tweetcount=0,
-             nb_residual_unit=2, use_tweet_counts=False, use_tweet_index=False,
-             vocab_size=0, seq_size=0, initial_embeddings=None, embedding_size=0):
+             external_dim, batch_size, nb_filters=64, kernal_size=(3, 3),
+             len_tweets=0, nb_residual_unit=2, use_tweet_counts=False,
+             use_tweet_index=False, sparse_index=True, vocab_size=0, seq_size=0,
+             train_embeddings=False, initial_embeddings=None, embedding_size=0):
     '''
     C - Temporal Closeness
     P - Period
@@ -66,18 +69,27 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
     input_dim = 2  # inflow and outflow
     # if use_tweet_counts:
     #     input_dim += 1
-    if use_tweet_index:
+    if use_tweet_index and len_tweets > 0:
         # Tweet embedding
         embedder = TweetRep(vocab_size=vocab_size,
                             embedding_size=embedding_size,
-                            initial_weights=initial_embeddings)
+                            initial_weights=initial_embeddings,
+                            train_embeddings=train_embeddings,
+                            map_height=map_height,
+                            map_width=map_width,
+                            len_seq=len_tweets,
+                            seq_size=seq_size,
+                            batch_size=batch_size)
         concat = Concatenate(axis=1)
+        if sparse_index:  # multiple by constant to make it a keras tensor
+            to_dense = Lambda(lambda x: K.to_dense(x * K.constant(1)))
+            #to_dense = ToDense(lambda x: K.to_dense(x))
 
     # flows input
     for i, len_seq in enumerate([len_closeness, len_period, len_trend]):
         if len_seq is not None:
-            if i == 0 and use_tweet_counts and len_tweetcount > 0:
-                flow_input = Input(shape=(len_seq * input_dim + len_tweetcount,
+            if i == 0 and use_tweet_counts and len_tweets > 0:
+                flow_input = Input(shape=(len_seq * input_dim + len_tweets,
                                           map_height,
                                           map_width))
             else:
@@ -86,12 +98,13 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                           map_width))
             main_inputs.append(flow_input)
 
-            if use_tweet_index:
-                tweet_input = Input(shape=(len_seq,
-                                           map_height,
-                                           map_width,
-                                           seq_size))
-                main_inputs.append(tweet_input)
+            if i == 0 and use_tweet_index:
+                tweet_index_input = Input(shape=(len_tweets * map_height * map_width,
+                                                 seq_size),
+                                          sparse=sparse_index)
+                # main_inputs.append(tweet_input)
+                if sparse_index:
+                    tweet_input = to_dense(tweet_index_input)
                 embedded_tweets = embedder(tweet_input)
                 embedded_input = concat([flow_input, embedded_tweets])
             else:
@@ -113,9 +126,10 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                   nb_col=kernal_w,
                                   border_mode="same")(activation)
             outputs.append(conv2)
+    main_inputs.append(tweet_index_input)
 
     # parameter-matrix-based fusion
-    if len(outputs) == 1:
+    if len(outputs) == 1:  # no fusion needed
         main_output = outputs[0]
     else:
         from .iLayer import iLayer

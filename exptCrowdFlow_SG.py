@@ -23,15 +23,17 @@ np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
 ds_name = 'VDLset1'  # dataset name
 map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
-CACHEDATA = False                             # cache data or NOT
+CACHEDATA = False                            # cache data or NOT
 use_meta = True
 use_weather = True
 use_holidays = True
-use_tweet_counts = True
+use_tweet_counts = False
 tweet_norm = 'all'  # day+time
-use_tweet_index = False
+use_tweet_index = True
+sparse_index = True
+train_embeddings = True
 vocab_size = 100000   # to be inside file?
-seq_size = 50      # to be inside file?
+seq_size = 1000      # to be inside file?
 embedding_size = 25
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
@@ -51,7 +53,7 @@ tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(
     map_height,
     len_interval
 )
-tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.h5'.format(
+tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.npz'.format(
     city_name,
     ds_name,
     map_width,
@@ -68,13 +70,13 @@ path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
-batch_size = 32               # batch size
+batch_size = 32              # batch size
 T = 24 * 60 / len_interval   # number of time intervals in one day
 lr = 0.0002                  # learning rate
 len_closeness = 4            # length of closeness dependent sequence
 len_period = 1               # length of peroid dependent sequence
 len_trend = 1                # length of trend dependent sequence
-len_tweetcount = 1           # length of tweet counts dependent sequence
+len_tweets = 1               # length of tweets dependent sequence
 nb_residual_unit = 2         # number of residual units
 period_interval = 1          # period interval length (in days)
 trend_interval = 7           # period interval length (in days)
@@ -141,8 +143,9 @@ else:
 mask_info = '_masked' if use_mask else ''
 tweet_count_info = '_tweetcount' if use_tweet_counts else ''
 tweet_index_info = '_tweetindex' if use_tweet_index else ''
+tweet_len_info = '_' + str(len_tweets) if (use_tweet_counts or use_tweet_index) else ''
 
-cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
+cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}{}.h5'.format(
     city_name,
     ds_name,
     map_width,
@@ -155,6 +158,7 @@ cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}.h5'.format(
     mask_info,
     tweet_count_info,
     tweet_index_info,
+    tweet_len_info
 )
 cache_fpath = os.path.join(path_cache, cache_fname)
 norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -164,7 +168,7 @@ initial_embeddings_fpath = os.path.join(DS_DATAPATH,
 
 
 # Define the file paths of the result and model files
-hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}'.format(
+hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}{}'.format(
     city_name,
     ds_name,
     map_width,
@@ -178,7 +182,8 @@ hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}'.format(
     nb_residual_unit,
     lr,
     tweet_count_info,
-    tweet_index_info
+    tweet_index_info,
+    tweet_len_info
 )
 dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
 dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -216,24 +221,27 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
     c_conf = None if len_closeness <= 0 else len_closeness
     p_conf = None if len_period <= 0 else len_period
     t_conf = None if len_trend <= 0 else len_trend
-    tc_conf = None if len_tweetcount <= 0 else len_tweetcount
+    tweet_conf = None if len_tweets <= 0 else len_tweets
 
     model = stresnet(map_height=map_height,
                      map_width=map_width,
                      len_closeness=c_conf,
                      len_period=p_conf,
                      len_trend=t_conf,
-                     len_tweetcount=tc_conf,
+                     len_tweets=tweet_conf,
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit,
                      nb_filters=nb_filters,
                      kernal_size=kernal_size,
                      use_tweet_counts=use_tweet_counts,
                      use_tweet_index=use_tweet_index,
+                     sparse_index=sparse_index,
+                     train_embeddings=train_embeddings,
                      vocab_size=vocab_size,
                      seq_size=seq_size,
                      embedding_size=embedding_size,
-                     initial_embeddings=initial_word_embeddings)
+                     initial_embeddings=initial_word_embeddings,
+                     batch_size=batch_size)
     adam = Adam(lr=lr)
     model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()
@@ -320,7 +328,7 @@ def main():
                 len_closeness=len_closeness,
                 len_period=len_period,
                 len_trend=len_trend,
-                len_tweetcount=len_tweetcount,
+                len_tweets=len_tweets,
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
