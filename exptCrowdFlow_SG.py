@@ -33,7 +33,7 @@ use_tweet_index = True
 sparse_index = True
 train_embeddings = True
 vocab_size = 100000   # to be inside file?
-seq_size = 1000      # to be inside file?
+seq_size = 100        # to be inside file?
 embedding_size = 25
 len_interval = 30  # 30 minutes per time slot
 DATAPATH = 'dataset'
@@ -70,7 +70,7 @@ path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
-batch_size = 32              # batch size
+batch_size = 16              # batch size
 T = 24 * 60 / len_interval   # number of time intervals in one day
 lr = 0.0002                  # learning rate
 len_closeness = 4            # length of closeness dependent sequence
@@ -240,8 +240,7 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
                      vocab_size=vocab_size,
                      seq_size=seq_size,
                      embedding_size=embedding_size,
-                     initial_embeddings=initial_word_embeddings,
-                     batch_size=batch_size)
+                     initial_embeddings=initial_word_embeddings)
     adam = Adam(lr=lr)
     model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()

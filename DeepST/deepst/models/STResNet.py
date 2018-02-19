@@ -51,7 +51,7 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 
 
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
-             external_dim, batch_size, nb_filters=64, kernal_size=(3, 3),
+             external_dim, nb_filters=64, kernal_size=(3, 3),
              len_tweets=0, nb_residual_unit=2, use_tweet_counts=False,
              use_tweet_index=False, sparse_index=True, vocab_size=0, seq_size=0,
              train_embeddings=False, initial_embeddings=None, embedding_size=0):
@@ -78,11 +78,10 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                             map_height=map_height,
                             map_width=map_width,
                             len_seq=len_tweets,
-                            seq_size=seq_size,
-                            batch_size=batch_size)
+                            seq_size=seq_size)
         concat = Concatenate(axis=1)
         if sparse_index:  # multiple by constant to make it a keras tensor
-            to_dense = Lambda(lambda x: K.to_dense(x * K.constant(1)))
+            to_dense = Lambda(lambda x: K.to_dense(x))
             #to_dense = ToDense(lambda x: K.to_dense(x))
 
     # flows input
