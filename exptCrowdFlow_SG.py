@@ -148,8 +148,10 @@ mask_info = '_masked' if use_mask else ''
 tweet_count_info = '_tweetcount' if use_tweet_counts else ''
 tweet_index_info = '_tweetindex' if use_tweet_index else ''
 tweet_len_info = '_' + str(len_tweets) if (use_tweet_counts or use_tweet_index) else ''
+reduce_dim_info = '_reduce' + str(hidden_layers) if reduce_index_dims else ''
+dropouts_info = '_dropout' + str(dropout_rate) if use_dropout else ''
 
-cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}{}.h5'.format(
+cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}{}{}{}.h5'.format(
     city_name,
     ds_name,
     map_width,
@@ -162,7 +164,9 @@ cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}{}.h5'.format(
     mask_info,
     tweet_count_info,
     tweet_index_info,
-    tweet_len_info
+    tweet_len_info,
+    reduce_dim_info,
+    dropouts_info
 )
 cache_fpath = os.path.join(path_cache, cache_fname)
 norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -172,7 +176,7 @@ initial_embeddings_fpath = os.path.join(DS_DATAPATH,
 
 
 # Define the file paths of the result and model files
-hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}{}'.format(
+hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}{}{}{}'.format(
     city_name,
     ds_name,
     map_width,
@@ -187,7 +191,9 @@ hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}{}'.forma
     lr,
     tweet_count_info,
     tweet_index_info,
-    tweet_len_info
+    tweet_len_info,
+    reduce_dim_info,
+    dropouts_info
 )
 dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
 dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -399,7 +405,7 @@ def main():
     model.load_weights(dev_weights_fpath)
     score = model.evaluate(X_train,
                            Y_train,
-                           batch_size=batch_size,  # batch by day
+                           batch_size=batch_size,
                            verbose=development_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
