@@ -10,7 +10,8 @@ from keras.layers import (
     Dense,
     Reshape,
     Concatenate,
-    Lambda
+    Lambda,
+    Dropout
 )
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
@@ -28,7 +29,12 @@ def _bn_relu_conv(nb_filter, nb_row, nb_col, subsample=(1, 1), bn=False):
         if bn:
             input = BatchNormalization(mode=0, axis=1)(input)
         activation = Activation('relu')(input)
-        return Convolution2D(nb_filter=nb_filter, nb_row=nb_row, nb_col=nb_col, subsample=subsample, border_mode="same")(activation)
+        return Convolution2D(nb_filter=nb_filter,
+                             nb_row=nb_row,
+                             nb_col=nb_col,
+                             subsample=subsample,
+                             border_mode='same',
+                             data_format='channels_first')(activation)
     return f
 
 
@@ -54,7 +60,9 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
              external_dim, nb_filters=64, kernal_size=(3, 3),
              len_tweets=0, nb_residual_unit=2, use_tweet_counts=False,
              use_tweet_index=False, sparse_index=True, vocab_size=0, seq_size=0,
-             train_embeddings=False, initial_embeddings=None, embedding_size=0):
+             train_embeddings=False, initial_embeddings=None, embedding_size=0,
+             reduce_index_dims=False, hidden_layers=(10, 2), use_dropout=False,
+             dropout_rate=0.2, dropout_seed=1337):
     '''
     C - Temporal Closeness
     P - Period
@@ -67,8 +75,7 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
 
     kernal_w, kernal_h = kernal_size
     input_dim = 2  # inflow and outflow
-    # if use_tweet_counts:
-    #     input_dim += 1
+
     if use_tweet_index and len_tweets > 0:
         # Tweet embedding
         embedder = TweetRep(vocab_size=vocab_size,
@@ -78,15 +85,18 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                             map_height=map_height,
                             map_width=map_width,
                             len_seq=len_tweets,
-                            seq_size=seq_size)
+                            seq_size=seq_size,
+                            reduce_index_dims=reduce_index_dims)
         concat = Concatenate(axis=1)
-        if sparse_index:  # multiple by constant to make it a keras tensor
+        if sparse_index:
             to_dense = Lambda(lambda x: K.to_dense(x))
-            #to_dense = ToDense(lambda x: K.to_dense(x))
+        if reduce_index_dims and len(hidden_layers) > 0:
+            reducers = [Dense(i) for i in hidden_layers]
 
     # flows input
     for i, len_seq in enumerate([len_closeness, len_period, len_trend]):
         if len_seq is not None:
+            # Add tweet counts with len_closeness
             if i == 0 and use_tweet_counts and len_tweets > 0:
                 flow_input = Input(shape=(len_seq * input_dim + len_tweets,
                                           map_height,
@@ -97,14 +107,22 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                           map_width))
             main_inputs.append(flow_input)
 
+            # Add tweet tokens index with len_closeness
             if i == 0 and use_tweet_index:
                 tweet_index_input = Input(shape=(len_tweets * map_height * map_width,
                                                  seq_size),
                                           sparse=sparse_index)
-                # main_inputs.append(tweet_input)
                 if sparse_index:
                     tweet_input = to_dense(tweet_index_input)
                 embedded_tweets = embedder(tweet_input)
+                if reduce_index_dims and len(reducers) > 0:
+                    for reducer in reducers:
+                        embedded_tweets = reducer(embedded_tweets)
+                        embedded_tweets = Activation('relu')(embedded_tweets)
+                        if use_dropout:
+                            embedded_tweets = Dropout(rate=dropout_rate,
+                                                      seed=dropout_seed)(embedded_tweets)
+                    embedded_tweets = Reshape((-1, map_height, map_width))(embedded_tweets)
                 embedded_input = concat([flow_input, embedded_tweets])
             else:
                 embedded_input = flow_input
@@ -113,7 +131,8 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
             conv1 = Convolution2D(nb_filter=nb_filters,
                                   nb_row=kernal_h,
                                   nb_col=kernal_w,
-                                  border_mode="same")(embedded_input)
+                                  border_mode='same',
+                                  data_format='channels_first')(embedded_input)
             # [nb_residual_unit] Residual Units
             residual_output = ResUnits(_residual_unit,
                                        nb_filter=nb_filters,
@@ -123,7 +142,8 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
             conv2 = Convolution2D(nb_filter=2,  # output dim of prediction
                                   nb_row=kernal_h,
                                   nb_col=kernal_w,
-                                  border_mode="same")(activation)
+                                  border_mode='same',
+                                  data_format='channels_first')(activation)
             outputs.append(conv2)
     main_inputs.append(tweet_index_input)
 
@@ -158,5 +178,4 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
 
 if __name__ == '__main__':
     model = stresnet(external_dim=28, nb_residual_unit=12)
-    #plot(model, to_file='ST-ResNet.png', show_shapes=True)
     model.summary()

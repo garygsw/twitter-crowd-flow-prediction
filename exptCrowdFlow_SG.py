@@ -32,6 +32,10 @@ tweet_norm = 'all'  # day+time
 use_tweet_index = True
 sparse_index = True
 train_embeddings = True
+reduce_index_dims = True
+hidden_layers = (10, 2)
+use_dropout = True
+dropout_rate = 0.2
 vocab_size = 100000   # to be inside file?
 seq_size = 100        # to be inside file?
 embedding_size = 25
@@ -240,7 +244,11 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
                      vocab_size=vocab_size,
                      seq_size=seq_size,
                      embedding_size=embedding_size,
-                     initial_embeddings=initial_word_embeddings)
+                     initial_embeddings=initial_word_embeddings,
+                     reduce_index_dims=reduce_index_dims,
+                     hidden_layers=hidden_layers,
+                     use_dropout=use_dropout,
+                     dropout_rate=dropout_rate)
     adam = Adam(lr=lr)
     model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()
@@ -391,13 +399,13 @@ def main():
     model.load_weights(dev_weights_fpath)
     score = model.evaluate(X_train,
                            Y_train,
-                           batch_size=Y_train.shape[0] // T,  # batch by day
+                           batch_size=batch_size,  # batch by day
                            verbose=development_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=batch_size,
                            verbose=development_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
@@ -425,13 +433,13 @@ def main():
     ts = time.time()
     score = model.evaluate(X_train,
                            Y_train,
-                           batch_size=Y_train.shape[0] // T,  # batch by day
+                           batch_size=batch_size,
                            verbose=full_evaluate_verbose)
     logging.info('Train score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
     score = model.evaluate(X_test,
                            Y_test,
-                           batch_size=Y_test.shape[0],
+                           batch_size=batch_size,
                            verbose=full_evaluate_verbose)
     logging.info('Test score: %.6f rmse (norm): %.6f rmse (real): %.6f' %
                  (score[0], score[1], score[1] * (mmn._max - mmn._min) / 2.))
