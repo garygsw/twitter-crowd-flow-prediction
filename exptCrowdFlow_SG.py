@@ -86,7 +86,6 @@ period_interval = 1          # period interval length (in days)
 trend_interval = 7           # period interval length (in days)
 kernal_size = (3, 3)         # window for convolutional NN
 nb_filters = 64              # for conv1 layer
-nb_flow = 2                  # there are two types of flows: inflow and outflow
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
 validation_split = 0.1              # during development training phase
@@ -147,26 +146,43 @@ else:
 mask_info = '_masked' if use_mask else ''
 tweet_count_info = '_tweetcount' if use_tweet_counts else ''
 tweet_index_info = '_tweetindex' if use_tweet_index else ''
-tweet_len_info = '_' + str(len_tweets) if (use_tweet_counts or use_tweet_index) else ''
-reduce_dim_info = '_reduce' + str(hidden_layers) if reduce_index_dims else ''
-dropouts_info = '_dropout' + str(dropout_rate) if use_dropout else ''
+if use_tweet_counts or use_tweet_index:
+    tweet_len_info = 'tweetlen_%s' % len_tweets
+else:
+    tweet_len_info = ''
+if use_tweet_index:
+    tweet_index_params = '_v%s_n%s_k%s' % (vocab_size,
+                                           seq_size,
+                                           embedding_size)
+    if reduce_index_dims:
+        reduce_dim_info = '_reduce' + str(hidden_layers)
+        if use_dropout:
+            dropouts_info = '_dropout%s' % dropout_rate
+        else:
+            dropouts_info = ''
+    else:
+        reduce_dim_info = ''
+else:
+    tweet_index_params = ''
 
-cache_fname = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}{}{}{}{}.h5'.format(
-    city_name,
-    ds_name,
-    map_width,
-    map_height,
-    len_interval,
-    len_closeness,
-    len_period,
-    len_trend,
-    meta_info,
-    mask_info,
-    tweet_count_info,
-    tweet_index_info,
-    tweet_len_info,
-    reduce_dim_info,
-    dropouts_info
+cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_c{5}.p{6}.t{7}{8}{9}{10}{11}'
+               '{12}{13}{14}{15}.h5').format(
+    city_name,           # 0
+    ds_name,             # 1
+    map_width,           # 2
+    map_height,          # 3
+    len_interval,        # 4
+    len_closeness,       # 5
+    len_period,          # 6
+    len_trend,           # 7
+    meta_info,           # 8
+    mask_info,           # 9
+    tweet_count_info,    # 10
+    tweet_index_info,    # 11
+    tweet_index_params,  # 12
+    tweet_len_info,      # 13
+    reduce_dim_info,     # 14
+    dropouts_info        # 15
 )
 cache_fpath = os.path.join(path_cache, cache_fname)
 norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -176,24 +192,26 @@ initial_embeddings_fpath = os.path.join(DS_DATAPATH,
 
 
 # Define the file paths of the result and model files
-hyperparams_name = '{}_{}_M{}x{}_T{}_c{}.p{}.t{}{}{}_resunit{}_lr{}{}{}{}{}{}'.format(
-    city_name,
-    ds_name,
-    map_width,
-    map_height,
-    len_interval,
-    len_closeness,
-    len_period,
-    len_trend,
-    meta_info,
-    mask_info,
-    nb_residual_unit,
-    lr,
-    tweet_count_info,
-    tweet_index_info,
-    tweet_len_info,
-    reduce_dim_info,
-    dropouts_info
+hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_c{5}.p{6}.t{7}{8}{9}_resunit{10}'
+                    '_lr{11}{12}{13}{14}{15}{16}{17}').format(
+    city_name,           # 0
+    ds_name,             # 1
+    map_width,           # 2
+    map_height,          # 3
+    len_interval,        # 4
+    len_closeness,       # 5
+    len_period,          # 6
+    len_trend,           # 7
+    meta_info,           # 8
+    mask_info,           # 9
+    nb_residual_unit,    # 10
+    lr,                  # 11
+    tweet_count_info,    # 12
+    tweet_index_info,    # 13
+    tweet_index_params,  # 14
+    tweet_len_info,      # 15
+    reduce_dim_info,     # 16
+    dropouts_info        # 17
 )
 dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
 dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
