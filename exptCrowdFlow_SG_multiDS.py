@@ -487,6 +487,8 @@ def run_experiment(ds_name):
                                                                      minutes,
                                                                      seconds))
 
+    main()
+
 if __name__ == '__main__':
     for ds_name in datasets_names:
         run_experiment(ds_name)
