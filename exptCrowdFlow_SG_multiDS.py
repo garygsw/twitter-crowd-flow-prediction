@@ -18,6 +18,8 @@ from deepst.models.STResNet import stresnet
 import deepst.metrics as metrics
 from dataset import load_data
 
+# List of datasets names to run
+datasets_names = ['MTCset1', 'VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']
 
 def run_experiment(ds_name):
     # Input parameters
@@ -486,6 +488,5 @@ def run_experiment(ds_name):
                                                                      seconds))
 
 if __name__ == '__main__':
-    datasets_names = ['MTCset1', 'VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']
     for ds_name in datasets_names:
         run_experiment(ds_name)
