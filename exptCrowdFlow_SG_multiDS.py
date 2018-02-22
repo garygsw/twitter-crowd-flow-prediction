@@ -32,7 +32,7 @@ def run_experiment(ds_name):
     use_holidays = True
     use_tweet_counts = False
     tweet_norm = 'all'  # day+time
-    use_tweet_index = True
+    use_tweet_index = False
     sparse_index = True
     train_embeddings = True
     reduce_index_dims = True
@@ -148,7 +148,7 @@ def run_experiment(ds_name):
     tweet_count_info = '_tweetcount' if use_tweet_counts else ''
     tweet_index_info = '_tweetindex' if use_tweet_index else ''
     if use_tweet_counts or use_tweet_index:
-        tweet_len_info = 'tweetlen_%s' % len_tweets
+        tweet_len_info = '_tweetlen_%s' % len_tweets
     else:
         tweet_len_info = ''
     if use_tweet_index:
@@ -166,24 +166,25 @@ def run_experiment(ds_name):
     else:
         tweet_index_params = ''
 
-    cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_c{5}.p{6}.t{7}{8}{9}{10}{11}'
-                   '{12}{13}{14}{15}.h5').format(
+    cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}'
+                   '{9}{10}{11}{12}{13}{14}{15}{16}.h5').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
         map_height,          # 3
         len_interval,        # 4
-        len_closeness,       # 5
-        len_period,          # 6
-        len_trend,           # 7
-        meta_info,           # 8
-        mask_info,           # 9
-        tweet_count_info,    # 10
-        tweet_index_info,    # 11
-        tweet_index_params,  # 12
-        tweet_len_info,      # 13
-        reduce_dim_info,     # 14
-        dropouts_info        # 15
+        batch_size,          # 5
+        len_closeness,       # 6
+        len_period,          # 7
+        len_trend,           # 8
+        meta_info,           # 9
+        mask_info,           # 10
+        tweet_count_info,    # 11
+        tweet_index_info,    # 12
+        tweet_index_params,  # 13
+        tweet_len_info,      # 14
+        reduce_dim_info,     # 15
+        dropouts_info        # 16
     )
     cache_fpath = os.path.join(path_cache, cache_fname)
     norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -192,26 +193,27 @@ def run_experiment(ds_name):
                                             initial_word_embeddings_fname)
 
     # Define the file paths of the result and model files
-    hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_c{5}.p{6}.t{7}{8}{9}_resunit{10}'
-                        '_lr{11}{12}{13}{14}{15}{16}{17}').format(
+    hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
+                        '{13}{14}{15}{16}{17}{18}').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
         map_height,          # 3
         len_interval,        # 4
-        len_closeness,       # 5
-        len_period,          # 6
-        len_trend,           # 7
-        meta_info,           # 8
-        mask_info,           # 9
-        nb_residual_unit,    # 10
-        lr,                  # 11
-        tweet_count_info,    # 12
-        tweet_index_info,    # 13
-        tweet_index_params,  # 14
-        tweet_len_info,      # 15
-        reduce_dim_info,     # 16
-        dropouts_info        # 17
+        batch_size,          # 5
+        len_closeness,       # 6
+        len_period,          # 7
+        len_trend,           # 8
+        meta_info,           # 9
+        mask_info,           # 10
+        nb_residual_unit,    # 11
+        lr,                  # 12
+        tweet_count_info,    # 13
+        tweet_index_info,    # 14
+        tweet_index_params,  # 15
+        tweet_len_info,      # 16
+        reduce_dim_info,     # 17
+        dropouts_info        # 18
     )
     dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
     dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
