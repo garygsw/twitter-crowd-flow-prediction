@@ -145,7 +145,8 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                                   border_mode='same',
                                   data_format='channels_first')(activation)
             outputs.append(conv2)
-    main_inputs.append(tweet_index_input)
+    if use_tweet_index:
+        main_inputs.append(tweet_index_input)
 
     # parameter-matrix-based fusion
     if len(outputs) == 1:  # no fusion needed
