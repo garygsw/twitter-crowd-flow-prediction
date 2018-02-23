@@ -484,7 +484,7 @@ def run_experiment(ds_name):
         # prints the full RMSE scores
         if use_mask:
             full_mask = np.tile(mask, [len_test, 1, 1, 1])
-            full_rmse = ((Y_test[full_mask] - predictions[mask]) ** 2).mean() ** 0.5
+            full_rmse = ((Y_test[full_mask] - predictions[full_mask]) ** 2).mean() ** 0.5
         else:
             full_rmse = ((Y_test - predictions) ** 2).mean() ** 0.5
         logging.info('Full RMSE: %.6f' % full_rmse)
