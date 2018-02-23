@@ -165,6 +165,8 @@ def run_experiment(ds_name):
             reduce_dim_info = ''
     else:
         tweet_index_params = ''
+        reduce_dim_info = ''
+        dropouts_info = ''
 
     cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}'
                    '{9}{10}{11}{12}{13}{14}{15}{16}.h5').format(
@@ -193,7 +195,7 @@ def run_experiment(ds_name):
                                             initial_word_embeddings_fname)
 
     # Define the file paths of the result and model files
-    hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
+    hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
                         '{13}{14}{15}{16}{17}{18}').format(
         city_name,           # 0
         ds_name,             # 1
@@ -473,11 +475,19 @@ def run_experiment(ds_name):
 
         # saves the prediction results
         predictions = model.predict(X_test)
-        logging.info('Predictions shape: ' + str(predictions.shape))
-        logging.info('Test shape: ' + str(Y_test.shape))
+        #logging.info('Predictions shape: ' + str(predictions.shape))
+        #logging.info('Test shape: ' + str(Y_test.shape))
         np.save(predictions_fpath, predictions)
         np.save(test_true_y_fpath, Y_test)
         np.save(pred_timestamps_fpath, timestamp_test)
+
+        # prints the full RMSE scores
+        if use_mask:
+            full_mask = np.tile(mask, [len_test, 1, 1, 1])
+            full_rmse = ((Y_test[full_mask] - predictions[mask]) ** 2).mean() ** 0.5
+        else:
+            full_rmse = ((Y_test - predictions) ** 2).mean() ** 0.5
+        logging.info('Full RMSE: %.6f' % full_rmse)
 
         # log the total training time
         hours = total_training_time // 3600
