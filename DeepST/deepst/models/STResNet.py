@@ -57,8 +57,8 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 
 
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
-             external_dim, nb_filters=64, kernal_size=(3, 3),
-             len_tweets=0, nb_residual_unit=2, use_tweet_counts=False,
+             external_dim, nb_filters=64, kernal_size=(3, 3), len_tweets=0,
+             nb_residual_unit=2, use_tweet_counts=False, sum_type='simple',
              use_tweet_index=False, sparse_index=True, vocab_size=0, seq_size=0,
              train_embeddings=False, initial_embeddings=None, embedding_size=0,
              reduce_index_dims=False, hidden_layers=(10, 2), use_dropout=False,
@@ -86,7 +86,8 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
                             map_width=map_width,
                             len_seq=len_tweets,
                             seq_size=seq_size,
-                            reduce_index_dims=reduce_index_dims)
+                            reduce_index_dims=reduce_index_dims,
+                            sum_type=sum_type)
         concat = Concatenate(axis=1)
         if sparse_index:
             to_dense = Lambda(lambda x: K.to_dense(x))

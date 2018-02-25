@@ -30,6 +30,7 @@ use_holidays = True
 use_tweet_counts = False
 tweet_norm = 'all'  # day+time
 use_tweet_index = True
+index_sum_type = 'simple'
 sparse_index = True
 train_embeddings = True
 reduce_index_dims = True
@@ -162,6 +163,7 @@ if use_tweet_index:
             dropouts_info = ''
     else:
         reduce_dim_info = ''
+        dropouts_info = ''
 else:
     tweet_index_params = ''
     reduce_dim_info = ''
@@ -267,6 +269,7 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
                      kernal_size=kernal_size,
                      use_tweet_counts=use_tweet_counts,
                      use_tweet_index=use_tweet_index,
+                     sum_type=index_sum_type,
                      sparse_index=sparse_index,
                      train_embeddings=train_embeddings,
                      vocab_size=vocab_size,

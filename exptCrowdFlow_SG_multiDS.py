@@ -19,7 +19,7 @@ import deepst.metrics as metrics
 from dataset import load_data
 
 # List of datasets names to run
-datasets_names = ['MTCset1', 'VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']
+datasets_names = ['VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']
 
 def run_experiment(ds_name):
     # Input parameters
@@ -33,6 +33,7 @@ def run_experiment(ds_name):
     use_tweet_counts = False
     tweet_norm = 'all'  # day+time
     use_tweet_index = False
+    index_sum_type = 'simple'
     sparse_index = True
     train_embeddings = True
     reduce_index_dims = True
@@ -163,6 +164,7 @@ def run_experiment(ds_name):
                 dropouts_info = ''
         else:
             reduce_dim_info = ''
+            dropouts_info = ''
     else:
         tweet_index_params = ''
         reduce_dim_info = ''
@@ -267,6 +269,7 @@ def run_experiment(ds_name):
                          kernal_size=kernal_size,
                          use_tweet_counts=use_tweet_counts,
                          use_tweet_index=use_tweet_index,
+                         sum_type=index_sum_type,
                          sparse_index=sparse_index,
                          train_embeddings=train_embeddings,
                          vocab_size=vocab_size,

@@ -7,8 +7,8 @@ import numpy as np
 
 class TweetRep(Layer):
     def __init__(self, vocab_size, embedding_size, map_height, map_width, len_seq,
-                 seq_size, initial_weights=None, train_embeddings=True,
-                 reduce_index_dims=False, **kwargs):
+                 seq_size, sum_type='simple', initial_weights=None,
+                 train_embeddings=True, reduce_index_dims=False, **kwargs):
         super(TweetRep, self).__init__(**kwargs)
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
@@ -19,6 +19,7 @@ class TweetRep(Layer):
         self.map_height = map_height
         self.map_width = map_width
         self.reduce_index_dims = reduce_index_dims
+        self.sum_type = sum_type
 
     def build(self, input_shape):
         if self.initial_weights is None:
@@ -44,21 +45,29 @@ class TweetRep(Layer):
                           self.embedding_size))
         # W: (?, l, h, w, n, k)
         V = K.sum(W, axis=-2, keepdims=True)   # sum vectors for all words per grid
-        # V: (?, l, h, w, k)
-        b = W * V
-        # b: (?, l, h, w, n, k)
-        b = K.sum(b, axis=-1)
-        # b: (?, l, h, w, n)
-        c = softmax(b, axis=-1)  # to make sum of all weights to sum up to 1
-        # c: (?, l, h, w, n)
-        c = K.expand_dims(c, axis=-1)
-        # c: (?, l, h, w, n, 1)
-        weighted_S = W * c
-        # weighted_S: (?, l, h, w, n, k)
-        weighted_S = K.sum(weighted_S, axis=-2)  # weighted sum
-        # weighted_S: (?, l, h, w, k)
+        # V: (?, l, h, w, 1, k)
+        if self.sum_type == 'weighted':
+            V = K.sum(W, axis=-2, keepdims=True)   # sum vectors for all words per grid
+            # V: (?, l, h, w, 1, k)
+            b = W * V
+            # b: (?, l, h, w, n, k)
+            b = K.sum(b, axis=-1)
+            # b: (?, l, h, w, n)
+            c = softmax(b, axis=-1)  # to make sum of all weights to sum up to 1
+            # c: (?, l, h, w, n)
+            c = K.expand_dims(c, axis=-1)
+            # c: (?, l, h, w, n, 1)
+            V = W * c
+            # W: (?, l, h, w, n, k)
+            V = K.sum(V, axis=-2)  # weighted sum
+            # W: (?, l, h, w, k)
+        elif self.sum_type == 'simple':
+            V = K.sum(W, axis=-2, keepdims=False)   # sum vectors for all words per grid
+            # V: (?, l, h, w, k)
+        else:
+            raise Exception('invalid sum type ' + str(self.sum_type))
         if not self.reduce_index_dims:
-            inverted_output = K.permute_dimensions(weighted_S, (0, 1, 4, 2, 3))
+            inverted_output = K.permute_dimensions(V, (0, 1, 4, 2, 3))
             # inverted_output: (?, l, k, h, w)
             output = K.reshape(inverted_output, (-1,
                                                  self.embedding_size * self.len_seq,
@@ -66,7 +75,7 @@ class TweetRep(Layer):
                                                  self.map_width))
             # output: (?, l*k, h, w)
         else:
-            inverted_output = K.permute_dimensions(weighted_S, (0, 2, 3, 1, 4))
+            inverted_output = K.permute_dimensions(V, (0, 2, 3, 1, 4))
             # inverted_output: (?, h, w, l, k)
             output = K.reshape(inverted_output, (-1,
                                                  self.map_height,
