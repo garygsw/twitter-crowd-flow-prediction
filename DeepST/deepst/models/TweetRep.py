@@ -44,8 +44,6 @@ class TweetRep(Layer):
                           self.seq_size,
                           self.embedding_size))
         # W: (?, l, h, w, n, k)
-        V = K.sum(W, axis=-2, keepdims=True)   # sum vectors for all words per grid
-        # V: (?, l, h, w, 1, k)
         if self.sum_type == 'weighted':
             V = K.sum(W, axis=-2, keepdims=True)   # sum vectors for all words per grid
             # V: (?, l, h, w, 1, k)

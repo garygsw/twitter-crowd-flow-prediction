@@ -21,27 +21,48 @@ from dataset import load_data
 # Input parameters
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
-ds_name = 'VDLset1'  # dataset name
+ds_name = 'VDLset1'   # dataset name
 map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
-CACHEDATA = False                            # cache data or NOT
+len_interval = 30               # 30 minutes per time slot
+CACHEDATA = False               # cache data or NOT
 use_meta = True
 use_weather = True
 use_holidays = True
-use_tweet_counts = False
-tweet_norm = 'all'  # day+time
-use_tweet_index = True
-index_sum_type = 'simple'
+use_tweet_counts = True
+tweet_counts_norm = 'all'        # other options: 'day+time'
+aggregate_tweets_counts = True
+tweet_lag = 1                    # how many lags tweet info in dataset
+tweet_lead = 0                   # how many lead tweet info in dataset
+use_tweet_index = False
+index_sum_type = 'simple'        # other options: 'weighted'
 sparse_index = True
 train_embeddings = True
 reduce_index_dims = True
 hidden_layers = (10, 2)
 use_dropout = True
 dropout_rate = 0.2
-vocab_size = 100000   # to be inside file?
-seq_size = 100        # to be inside file?
-embedding_size = 25
-len_interval = 30  # 30 minutes per time slot
-DATAPATH = 'dataset'
+batch_size = 16              # batch size
+vocab_size = 100000          # size of tweet tokens vocabulary
+seq_size = 100               # maximum size of tweets tokens indexes per grid
+embedding_size = 25          # size of tweet token embedding vector
+nb_epoch = 500               # number of epoch at training stage
+nb_epoch_cont = 100          # number of epoch at training (cont) stage
+T = 24 * 60 / len_interval   # number of time intervals in one day
+lr = 0.0002                  # learning rate
+len_closeness = 4            # length of closeness dependent sequence
+len_period = 1               # length of peroid dependent sequence
+len_trend = 1                # length of trend dependent sequence
+len_lag_tweets = 2           # length of tweets lag dependent sequence
+len_lead_tweets = 0          # length of tweets lead dependent sequence
+len_tweets = len_lag_tweets + len_lead_tweets
+nb_residual_unit = 2         # number of residual units
+period_interval = 1          # period interval length (in days)
+trend_interval = 7           # period interval length (in days)
+kernal_size = (3, 3)         # window for convolutional NN
+nb_filters = 64              # for conv1 layer
+days_test = 7 * 4            # number of days from the back as test set
+len_test = T * days_test
+validation_split = 0.1              # during development training phase
 flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
                                                      ds_name,
                                                      map_width,
@@ -51,19 +72,23 @@ weather_data_fname = '{}_{}_T{}_Weather.h5'.format(city_name,
                                                    ds_name,
                                                    len_interval)
 holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
-tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(
+tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount-{}+{}.h5'.format(
     city_name,
     ds_name,
     map_width,
     map_height,
-    len_interval
+    len_interval,
+    tweet_lag,
+    tweet_lead,
 )
-tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.npz'.format(
+tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex-{}+{}.npz'.format(
     city_name,
     ds_name,
     map_width,
     map_height,
-    len_interval
+    len_interval,
+    tweet_lag,
+    tweet_lead,
 )
 initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
     city_name,
@@ -71,25 +96,9 @@ initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
     vocab_size,
     embedding_size
 )
+DATAPATH = 'dataset'
 path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
 path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
-nb_epoch = 500               # number of epoch at training stage
-nb_epoch_cont = 100          # number of epoch at training (cont) stage
-batch_size = 16              # batch size
-T = 24 * 60 / len_interval   # number of time intervals in one day
-lr = 0.0002                  # learning rate
-len_closeness = 4            # length of closeness dependent sequence
-len_period = 1               # length of peroid dependent sequence
-len_trend = 1                # length of trend dependent sequence
-len_tweets = 1               # length of tweets dependent sequence
-nb_residual_unit = 2         # number of residual units
-period_interval = 1          # period interval length (in days)
-trend_interval = 7           # period interval length (in days)
-kernal_size = (3, 3)         # window for convolutional NN
-nb_filters = 64              # for conv1 layer
-days_test = 7 * 4            # number of days from the back as test set
-len_test = T * days_test
-validation_split = 0.1              # during development training phase
 path_hist = 'HIST'                  # history path
 path_model = 'MODEL'                # model path
 path_log = 'LOG'                    # log path
@@ -148,7 +157,7 @@ mask_info = '_masked' if use_mask else ''
 tweet_count_info = '_tweetcount' if use_tweet_counts else ''
 tweet_index_info = '_tweetindex' if use_tweet_index else ''
 if use_tweet_counts or use_tweet_index:
-    tweet_len_info = '_tweetlen%s' % len_tweets
+    tweet_len_info = '_tweetlen-%s+%s' % (len_lag_tweets, len_lead_tweets)
 else:
     tweet_len_info = ''
 if use_tweet_index:
@@ -268,6 +277,7 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
                      nb_filters=nb_filters,
                      kernal_size=kernal_size,
                      use_tweet_counts=use_tweet_counts,
+                     aggregate_tweets_counts=aggregate_tweets_counts,
                      use_tweet_index=use_tweet_index,
                      sum_type=index_sum_type,
                      sparse_index=sparse_index,
@@ -366,7 +376,8 @@ def main():
                 len_closeness=len_closeness,
                 len_period=len_period,
                 len_trend=len_trend,
-                len_tweets=len_tweets,
+                len_lag_tweets=len_lag_tweets,
+                len_lead_tweets=len_lead_tweets,
                 period_interval=period_interval,
                 trend_interval=trend_interval,
                 len_test=len_test,
@@ -375,10 +386,13 @@ def main():
                 weather_data=use_weather,
                 holiday_data=use_holidays,
                 tweet_count_data=use_tweet_counts,
+                aggregate_tweets_counts=aggregate_tweets_counts,
+                tweet_lag=tweet_lag,
+                tweet_lead=tweet_lead,
                 weather_data_filename=weather_data_fname,
                 holiday_data_filename=holiday_data_fname,
                 tweet_count_data_filename=tweet_counts_data_fname,
-                tweet_norm=tweet_norm,
+                tweet_counts_norm=tweet_counts_norm,
                 tweet_index_data=use_tweet_index,
                 tweet_index_data_filename=tweet_index_data_fname,
                 use_mask=use_mask

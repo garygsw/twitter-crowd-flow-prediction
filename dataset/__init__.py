@@ -62,8 +62,8 @@ class STMatrix(object):
         return True
 
     def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
-                       len_period=3, PeriodInterval=1, len_tweetcount=0,
-                       use_tweet_counts=False):
+                       len_period=3, PeriodInterval=1, len_tweetcount=1,
+                       use_tweet_counts=False, aggregate_tweets_counts=False):
         """current version
         """
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
@@ -72,6 +72,9 @@ class STMatrix(object):
         XT = []
         Y = []
         timestamps_Y = []
+
+        if use_tweet_counts and aggregate_tweets_counts:
+            len_tweetcount = 1
 
         # Generate a list of all look back time stamps
         depends = [range(1, len_tweetcount + 1),
@@ -108,16 +111,15 @@ class STMatrix(object):
                    for j in depends[3]]
 
             if use_tweet_counts and len_tweetcount > 0:
-                x_tc = [matrix[2, :, :] for matrix in x_tc]
-                x_tc = np.array([sum(x_tc)])
+                x_tc = [matrix[2:, :, :] for matrix in x_tc]
                 # remove tweet counts in flows
                 x_c = [matrix[:2, :, :] for matrix in x_c]
                 x_p = [matrix[:2, :, :] for matrix in x_p]
                 x_t = [matrix[:2, :, :] for matrix in x_t]
             if len_closeness > 0:
                 if use_tweet_counts and len_tweetcount > 0:
-                    x_c.append(x_tc)
-                XC.append(np.concatenate(x_c))
+                    x_c += x_tc
+                XC.append(np.vstack(x_c))
             if len_period > 0:
                 XP.append(np.vstack(x_p))
             if len_trend > 0:
@@ -298,16 +300,21 @@ def load_weather(timeslots, datapath):
 
 def load_data(datapath, flow_data_filename=None, T=48,
               len_closeness=None, len_period=None, len_trend=None,
-              len_tweets=None, period_interval=1, trend_interval=7,
+              len_lag_tweets=None, len_lead_tweets=None,
+              period_interval=1, trend_interval=7,
               use_mask=False, len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
               tweet_count_data=False, tweet_index_data=False,
-              tweet_count_data_filename=None,
-              tweet_norm=None, tweet_index_data_filename=None,
-              weather_data_filename=None, holiday_data_filename=None):
+              tweet_count_data_filename=None, aggregate_tweets_counts=False,
+              tweet_counts_norm=None, tweet_index_data_filename=None,
+              weather_data_filename=None, holiday_data_filename=None,
+              tweet_lag=1, tweet_lead=0):
     assert(len_closeness + len_period + len_trend > 0)
     # Load the h5 file and retrieve data
     flow_data_path = os.path.join(datapath, flow_data_filename)
+    if not os.path.exists(flow_data_path):
+        raise Exception('flow input data path "%s" does not exists' % flow_data_path)
+    logging.info('reading flow data...')
     stat(flow_data_path, T)
     f = h5py.File(flow_data_path, 'r')
     flow_data = f['data'].value
@@ -324,19 +331,44 @@ def load_data(datapath, flow_data_filename=None, T=48,
     data_mmn = np.array([mmn.transform(d) for d in flow_data])
 
     # Load tweet count data tile
-    if tweet_count_data and len_tweets is not None and tweet_norm is not None:
+    len_tweets = 0
+    if len_lag_tweets is not None:
+        len_tweets += len_lag_tweets
+    if len_lead_tweets is not None:
+        len_tweets += len_lead_tweets
+    if tweet_count_data and len_tweets != 0 and tweet_counts_norm is not None:
         logging.info('reading tweet counts data...')
         tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
+        if not os.path.exists(tweet_count_path):
+            raise Exception('tweet counts input data path "%s" does not exists' % tweet_count_path)
         f = h5py.File(tweet_count_path, 'r')
-        assert(timestamps[0] == f['date'].value[1])  # due to lag
-        assert(timestamps[-1] == f['date'].value[-1])
+        assert(timestamps[0] == f['date'].value[tweet_lag])
+        assert(timestamps[-1] == f['date'].value[-tweet_lead - 1])
         tweet_counts = f['count'].value
-        tweet_counts = tweet_counts[:-1]  # throw away last
+        within_tweet_counts = tweet_counts[tweet_lag - 1:-tweet_lead - 1]
+        assert(len(within_tweet_counts) == len(timestamps))
         f.close()
 
+        # Aggregate the counts
+        logging.info('aggregating tweet counts...')
+        if aggregate_tweets_counts:
+            for i, timestamp in enumerate(timestamps):
+                # add up the lags
+                if len_lag_tweets:
+                    if len_lag_tweets < tweet_lag + i:
+                        pass  # ignore those with insufficient history data
+                    else:
+                        for j in range(len_lag_tweets):
+                            within_tweet_counts[i] += tweet_counts[i + j]
+                # add up the leads
+                if len_lead_tweets:
+                    for j in range(len_lead_tweets):
+                        within_tweet_counts[i] += tweet_counts[i + j + len_lag_tweets]
+
         # Normalize tweet counts
+        logging.info('normalizing tweet counts...')
         # tweet_count: (# of timeslots, h, w)
-        if tweet_norm == 'day+time':
+        if tweet_counts_norm == 'day+time':
             hist_seq = {i: {} for i in range(7)}
             for i, timestamp in enumerate(timestamps):
                 date, timeslot = timestamp.split('_')
@@ -351,24 +383,24 @@ def load_data(datapath, flow_data_filename=None, T=48,
             for i, timestamp in enumerate(timestamps):
                 date, timeslot = timestamp.split('_')
                 weekday = datetime.strptime(date, '%Y%m%d').weekday()
-                tweet_counts[i] = np.divide(
+                within_tweet_counts[i] = np.divide(
                     tweet_counts[i],
                     hist_max[weekday][timeslot],
-                    out=np.zeros_like(tweet_counts[i]),
+                    out=np.zeros_like(within_tweet_counts[i]),
                     where=hist_max[weekday][timeslot] != 0
                 )
-        elif tweet_norm == 'all':
+        elif tweet_counts_norm == 'all':
             max_counts = tweet_counts.max(axis=0)
             for i, timestamp in enumerate(timestamps):
-                tweet_counts[i] = np.divide(
+                within_tweet_counts[i] = np.divide(
                     tweet_counts[i],
                     max_counts,
-                    out=np.zeros_like(tweet_counts[i]),
+                    out=np.zeros_like(within_tweet_counts[i]),
                     where=max_counts != 0
                 )
 
         # Insert the tweet counts dimension
-        data_mmn = np.insert(data_mmn, 2, tweet_counts, axis=1)
+        data_mmn = np.insert(data_mmn, 2, within_tweet_counts, axis=1)
 
     # save preprocessing stats
     fpkl = open(norm_name, 'wb')
@@ -387,7 +419,8 @@ def load_data(datapath, flow_data_filename=None, T=48,
         len_tweetcount=len_tweets,
         PeriodInterval=period_interval,
         TrendInterval=trend_interval,
-        use_tweet_counts=tweet_count_data
+        use_tweet_counts=tweet_count_data,
+        aggregate_tweets_counts=aggregate_tweets_counts
     )
     logging.info("XC shape: " + str(XC.shape))
     logging.info("XP shape: " + str(XP.shape))
@@ -397,9 +430,12 @@ def load_data(datapath, flow_data_filename=None, T=48,
     if tweet_index_data and len_tweets is not None:
         logging.info('reading tweet index data...')
         tweet_index_data_path = os.path.join(datapath, tweet_index_data_filename)
+        if not os.path.exists(tweet_index_data_path):
+            raise Exception('tweet index input data path "%s" does not exists' % tweet_index_data_path)
         #f = h5py.File(tweet_index_data_path, 'r')
         #index_data = f['index'].value
         #timestamps = f['date'].value
+        logging.info('reading tweet index data...')
         index_data = np.load(tweet_index_data_path)
         timestamps = index_data.keys()
         timestamps = sorted(timestamps)

@@ -30,10 +30,13 @@ def run_experiment(ds_name):
     use_meta = True
     use_weather = True
     use_holidays = True
-    use_tweet_counts = False
-    tweet_norm = 'all'  # day+time
+    use_tweet_counts = True
+    tweet_counts_norm = 'all'        # other options: 'day+time'
+    aggregate_tweets_counts = True
+    tweet_lag = 1                    # how many lags tweet info in dataset
+    tweet_lead = 0                   # how many lead tweet info in dataset
     use_tweet_index = False
-    index_sum_type = 'simple'
+    index_sum_type = 'simple'        # other options: 'weighted'
     sparse_index = True
     train_embeddings = True
     reduce_index_dims = True
@@ -54,19 +57,23 @@ def run_experiment(ds_name):
                                                        ds_name,
                                                        len_interval)
     holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
-    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount+1.h5'.format(
+    tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount-{}+{}.h5'.format(
         city_name,
         ds_name,
         map_width,
         map_height,
-        len_interval
+        len_interval,
+        tweet_lag,
+        tweet_lead,
     )
-    tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex+1.npz'.format(
+    tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex-{}+{}.npz'.format(
         city_name,
         ds_name,
         map_width,
         map_height,
-        len_interval
+        len_interval,
+        tweet_lag,
+        tweet_lead,
     )
     initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
         city_name,
@@ -78,13 +85,15 @@ def run_experiment(ds_name):
     path_norm = os.path.join(DATAPATH, 'NORM')       # normalization path
     nb_epoch = 500               # number of epoch at training stage
     nb_epoch_cont = 100          # number of epoch at training (cont) stage
-    batch_size = 16              # batch size
+    batch_size = 32              # batch size
     T = 24 * 60 / len_interval   # number of time intervals in one day
     lr = 0.0002                  # learning rate
     len_closeness = 4            # length of closeness dependent sequence
     len_period = 1               # length of peroid dependent sequence
     len_trend = 1                # length of trend dependent sequence
-    len_tweets = 1               # length of tweets dependent sequence
+    len_lag_tweets = 2           # length of tweets lag dependent sequence
+    len_lead_tweets = 0          # length of tweets lead dependent sequence
+    len_tweets = len_lag_tweets + len_lead_tweets
     nb_residual_unit = 2         # number of residual units
     period_interval = 1          # period interval length (in days)
     trend_interval = 7           # period interval length (in days)
@@ -149,7 +158,7 @@ def run_experiment(ds_name):
     tweet_count_info = '_tweetcount' if use_tweet_counts else ''
     tweet_index_info = '_tweetindex' if use_tweet_index else ''
     if use_tweet_counts or use_tweet_index:
-        tweet_len_info = '_tweetlen_%s' % len_tweets
+        tweet_len_info = '_tweetlen-%s+%s' % (len_lag_tweets, len_lead_tweets)
     else:
         tweet_len_info = ''
     if use_tweet_index:
@@ -268,6 +277,7 @@ def run_experiment(ds_name):
                          nb_filters=nb_filters,
                          kernal_size=kernal_size,
                          use_tweet_counts=use_tweet_counts,
+                         aggregate_tweets_counts=aggregate_tweets_counts,
                          use_tweet_index=use_tweet_index,
                          sum_type=index_sum_type,
                          sparse_index=sparse_index,
@@ -366,7 +376,8 @@ def run_experiment(ds_name):
                     len_closeness=len_closeness,
                     len_period=len_period,
                     len_trend=len_trend,
-                    len_tweets=len_tweets,
+                    len_lag_tweets=len_lag_tweets,
+                    len_lead_tweets=len_lead_tweets,
                     period_interval=period_interval,
                     trend_interval=trend_interval,
                     len_test=len_test,
@@ -375,10 +386,13 @@ def run_experiment(ds_name):
                     weather_data=use_weather,
                     holiday_data=use_holidays,
                     tweet_count_data=use_tweet_counts,
+                    aggregate_tweets_counts=aggregate_tweets_counts,
+                    tweet_lag=tweet_lag,
+                    tweet_lead=tweet_lead,
                     weather_data_filename=weather_data_fname,
                     holiday_data_filename=holiday_data_fname,
                     tweet_count_data_filename=tweet_counts_data_fname,
-                    tweet_norm=tweet_norm,
+                    tweet_counts_norm=tweet_counts_norm,
                     tweet_index_data=use_tweet_index,
                     tweet_index_data_filename=tweet_index_data_fname,
                     use_mask=use_mask
