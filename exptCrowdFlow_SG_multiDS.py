@@ -31,10 +31,14 @@ def run_experiment(ds_name):
     use_weather = True
     use_holidays = True
     use_tweet_counts = True
-    tweet_counts_norm = 'all'        # other options: 'day+time'
-    aggregate_tweets_counts = True
+    use_future_tense_counts = False
+    use_past_tense_counts = False
+    use_positive_counts = False
+    use_negative_counts = False
+    counts_norm = 'all'        # other options: 'day+time'
+    aggregate_counts = True
     tweet_lag = 1                    # how many lags tweet info in dataset
-    tweet_lead = 0                   # how many lead tweet info in dataset
+    tweet_lead = 10                  # how many lead tweet info in dataset
     use_tweet_index = False
     index_sum_type = 'simple'        # other options: 'weighted'
     sparse_index = True
@@ -58,6 +62,42 @@ def run_experiment(ds_name):
                                                        len_interval)
     holiday_data_fname = '{}_{}_Holidays.txt'.format(city_name, ds_name)
     tweet_counts_data_fname = '{}_{}_M{}x{}_T{}_TweetCount-{}+{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        tweet_lag,
+        tweet_lead,
+    )
+    future_counts_data_fname = '{}_{}_M{}x{}_T{}_FutureCount-{}+{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        tweet_lag,
+        tweet_lead,
+    )
+    past_counts_data_fname = '{}_{}_M{}x{}_T{}_PastCount-{}+{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        tweet_lag,
+        tweet_lead,
+    )
+    positive_counts_data_fname = '{}_{}_M{}x{}_T{}_PositiveCount-{}+{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        tweet_lag,
+        tweet_lead,
+    )
+    negative_counts_data_fname = '{}_{}_M{}x{}_T{}_NegativeCount-{}+{}.h5'.format(
         city_name,
         ds_name,
         map_width,
@@ -157,6 +197,10 @@ def run_experiment(ds_name):
     mask_info = '_masked' if use_mask else ''
     tweet_count_info = '_tweetcount' if use_tweet_counts else ''
     tweet_index_info = '_tweetindex' if use_tweet_index else ''
+    future_count_info = '_futurecount' if use_future_tense_counts else ''
+    past_count_info = '_pastcount' if use_past_tense_counts else ''
+    positive_count_info = '_positivecount' if use_positive_counts else ''
+    negative_count_info = '_negativecount' if use_negative_counts else ''
     if use_tweet_counts or use_tweet_index:
         tweet_len_info = '_tweetlen-%s+%s' % (len_lag_tweets, len_lead_tweets)
     else:
@@ -180,7 +224,7 @@ def run_experiment(ds_name):
         dropouts_info = ''
 
     cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}'
-                   '{9}{10}{11}{12}{13}{14}{15}{16}.h5').format(
+                   '{9}{10}{11}{12}{13}{14}{15}{16}{17}{18}{19}{20}.h5').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
@@ -197,7 +241,11 @@ def run_experiment(ds_name):
         tweet_index_params,  # 13
         tweet_len_info,      # 14
         reduce_dim_info,     # 15
-        dropouts_info        # 16
+        dropouts_info,       # 16
+        future_count_info,   # 17
+        past_count_info,     # 18
+        positive_count_info,  # 19
+        negative_count_info,  # 20
     )
     cache_fpath = os.path.join(path_cache, cache_fname)
     norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -207,7 +255,7 @@ def run_experiment(ds_name):
 
     # Define the file paths of the result and model files
     hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
-                        '{13}{14}{15}{16}{17}{18}').format(
+                        '{13}{14}{15}{16}{17}{18}{19}{20}{21}{22}').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
@@ -226,7 +274,11 @@ def run_experiment(ds_name):
         tweet_index_params,  # 15
         tweet_len_info,      # 16
         reduce_dim_info,     # 17
-        dropouts_info        # 18
+        dropouts_info,       # 18
+        future_count_info,   # 19
+        past_count_info,     # 20
+        positive_count_info,  # 21
+        negative_count_info,  # 22
     )
     dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
     dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -277,7 +329,11 @@ def run_experiment(ds_name):
                          nb_filters=nb_filters,
                          kernal_size=kernal_size,
                          use_tweet_counts=use_tweet_counts,
-                         aggregate_tweets_counts=aggregate_tweets_counts,
+                         use_future_tense_counts=use_future_tense_counts,
+                         use_past_tense_counts=use_past_tense_counts,
+                         use_positive_counts=use_positive_counts,
+                         use_negative_counts=use_negative_counts,
+                         aggregate_counts=aggregate_counts,
                          use_tweet_index=use_tweet_index,
                          sum_type=index_sum_type,
                          sparse_index=sparse_index,
@@ -386,13 +442,21 @@ def run_experiment(ds_name):
                     weather_data=use_weather,
                     holiday_data=use_holidays,
                     tweet_count_data=use_tweet_counts,
-                    aggregate_tweets_counts=aggregate_tweets_counts,
+                    future_count_data=use_future_tense_counts,
+                    past_count_data=use_past_tense_counts,
+                    positive_count_data=use_positive_counts,
+                    negative_count_data=use_negative_counts,
+                    aggregate_counts=aggregate_counts,
                     tweet_lag=tweet_lag,
                     tweet_lead=tweet_lead,
                     weather_data_filename=weather_data_fname,
                     holiday_data_filename=holiday_data_fname,
                     tweet_count_data_filename=tweet_counts_data_fname,
-                    tweet_counts_norm=tweet_counts_norm,
+                    future_count_data_filename=future_counts_data_fname,
+                    past_count_data_filename=past_counts_data_fname,
+                    positive_count_data_filename=positive_counts_data_fname,
+                    negative_count_data_filename=negative_counts_data_fname,
+                    counts_norm=counts_norm,
                     tweet_index_data=use_tweet_index,
                     tweet_index_data_filename=tweet_index_data_fname,
                     use_mask=use_mask

@@ -59,7 +59,9 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
 def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
              external_dim, nb_filters=64, kernal_size=(3, 3), len_tweets=0,
              nb_residual_unit=2, use_tweet_counts=False, sum_type='simple',
-             aggregate_tweets_counts=False,
+             aggregate_counts=False, use_future_tense_counts=False,
+             use_past_tense_counts=False, use_positive_counts=False,
+             use_negative_counts=False,
              use_tweet_index=False, sparse_index=True, vocab_size=0, seq_size=0,
              train_embeddings=False, initial_embeddings=None, embedding_size=0,
              reduce_index_dims=False, hidden_layers=(10, 2), use_dropout=False,
@@ -95,17 +97,23 @@ def stresnet(map_height, map_width, len_closeness, len_period, len_trend,
         if reduce_index_dims and len(hidden_layers) > 0:
             reducers = [Dense(i) for i in hidden_layers]
 
+    total_count_types = sum([1 for x in [use_tweet_counts,
+                                         use_future_tense_counts,
+                                         use_past_tense_counts,
+                                         use_positive_counts,
+                                         use_negative_counts] if x])
+
     # flows input
     for i, len_seq in enumerate([len_closeness, len_period, len_trend]):
         if len_seq is not None:
             # Add tweet counts with len_closeness
             if i == 0 and use_tweet_counts and len_tweets > 0:
-                if aggregate_tweets_counts:
-                    flow_input = Input(shape=(len_seq * input_dim + 1,
+                if aggregate_counts:
+                    flow_input = Input(shape=(len_seq * input_dim + total_count_types,
                                               map_height,
                                               map_width))
                 else:
-                    flow_input = Input(shape=(len_seq * input_dim + len_tweets,
+                    flow_input = Input(shape=(len_seq * input_dim + len_tweets * total_count_types,
                                               map_height,
                                               map_width))
             else:

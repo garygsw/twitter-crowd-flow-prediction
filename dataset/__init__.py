@@ -63,7 +63,7 @@ class STMatrix(object):
 
     def create_dataset(self, len_closeness=3, len_trend=3, TrendInterval=7,
                        len_period=3, PeriodInterval=1, len_tweetcount=1,
-                       use_tweet_counts=False, aggregate_tweets_counts=False):
+                       use_tweet_counts=False, aggregate_counts=False):
         """current version
         """
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
@@ -73,7 +73,7 @@ class STMatrix(object):
         Y = []
         timestamps_Y = []
 
-        if use_tweet_counts and aggregate_tweets_counts:
+        if use_tweet_counts and aggregate_counts:
             len_tweetcount = 1
 
         # Generate a list of all look back time stamps
@@ -298,15 +298,90 @@ def load_weather(timeslots, datapath):
     return merge_data
 
 
+def read_count_data(count_name, datapath, counts_norm, flow_timestamps, aggregate_counts,
+                    len_lag, len_lead, data_lag, data_lead):
+    # Load tweet count data tile
+    logging.info('reading counts data for %s...' % count_name)
+    if not os.path.exists(datapath):
+        raise Exception('counts input data path "%s" does not exists' % datapath)
+    f = h5py.File(datapath, 'r')
+    assert(flow_timestamps[0] == f['date'].value[data_lag])
+    assert(flow_timestamps[-1] == f['date'].value[-data_lead - 1])
+    counts_data = f['count'].value
+    within_window_counts = counts_data[data_lag - 1:-data_lead - 1]
+    assert(len(within_window_counts) == len(flow_timestamps))
+    f.close()
+
+    # Aggregate the counts
+    logging.info('aggregating counts for %s...' % count_name)
+    if aggregate_counts:
+        for i, timestamp in enumerate(flow_timestamps):
+            # add up the lags
+            if len_lag:
+                if len_lag < data_lag + i:
+                    pass  # ignore those with insufficient history data
+                elif len_lag > 1:
+                    for j in range(1, len_lag):
+                        within_window_counts[i] += counts_data[i - j]
+            # add up the leads
+            if len_lead > 0:
+                for j in range(len_lead):
+                    within_window_counts[i] += counts_data[i + j + len_lag]
+
+    # Normalize counts
+    logging.info('normalizing counts for %s...' % count_name)
+    # tweet_count: (# of timeslots, h, w)
+    if counts_norm == 'day+time':
+        hist_seq = {i: {} for i in range(7)}
+        for i, timestamp in enumerate(flow_timestamps):
+            date, timeslot = timestamp.split('_')
+            weekday = datetime.strptime(date, '%Y%m%d').weekday()
+            count_matrix = within_window_counts[i]
+            hist_seq[weekday][timeslot] = hist_seq[weekday].get(
+                timeslot, []) + [count_matrix]
+        hist_max = {i: {} for i in range(7)}
+        for weekday, timeslots in hist_seq.iteritems():
+            for t, matrix_seq in timeslots.iteritems():
+                hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
+        for i, timestamp in enumerate(flow_timestamps):
+            date, timeslot = timestamp.split('_')
+            weekday = datetime.strptime(date, '%Y%m%d').weekday()
+            within_window_counts[i] = np.divide(
+                within_window_counts[i],
+                hist_max[weekday][timeslot],
+                out=np.zeros_like(within_window_counts[i]),
+                where=hist_max[weekday][timeslot] != 0
+            )
+    elif counts_norm == 'all':
+        max_counts = within_window_counts.max(axis=0)
+        for i, timestamp in enumerate(flow_timestamps):
+            within_window_counts[i] = np.divide(
+                within_window_counts[i],
+                max_counts,
+                out=np.zeros_like(within_window_counts[i]),
+                where=max_counts != 0
+            )
+
+    return within_window_counts * 2 - 1
+
+
 def load_data(datapath, flow_data_filename=None, T=48,
               len_closeness=None, len_period=None, len_trend=None,
               len_lag_tweets=None, len_lead_tweets=None,
               period_interval=1, trend_interval=7,
               use_mask=False, len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
-              tweet_count_data=False, tweet_index_data=False,
-              tweet_count_data_filename=None, aggregate_tweets_counts=False,
-              tweet_counts_norm=None, tweet_index_data_filename=None,
+              tweet_count_data=False, future_count_data=False,
+              past_count_data=False, positive_count_data=False,
+              negative_count_data=False,
+              tweet_index_data=False,
+              tweet_count_data_filename=None,
+              future_count_data_filename=None,
+              past_count_data_filename=None,
+              positive_count_data_filename=None,
+              negative_count_data_filename=None,
+              aggregate_counts=False,
+              counts_norm=None, tweet_index_data_filename=None,
               weather_data_filename=None, holiday_data_filename=None,
               tweet_lag=1, tweet_lead=0):
     assert(len_closeness + len_period + len_trend > 0)
@@ -330,77 +405,72 @@ def load_data(datapath, flow_data_filename=None, T=48,
     mmn.fit(data_train)
     data_mmn = np.array([mmn.transform(d) for d in flow_data])
 
-    # Load tweet count data tile
-    len_tweets = 0
-    if len_lag_tweets is not None:
-        len_tweets += len_lag_tweets
-    if len_lead_tweets is not None:
-        len_tweets += len_lead_tweets
-    if tweet_count_data and len_tweets != 0 and tweet_counts_norm is not None:
-        logging.info('reading tweet counts data...')
-        tweet_count_path = os.path.join(datapath, tweet_count_data_filename)
-        if not os.path.exists(tweet_count_path):
-            raise Exception('tweet counts input data path "%s" does not exists' % tweet_count_path)
-        f = h5py.File(tweet_count_path, 'r')
-        assert(timestamps[0] == f['date'].value[tweet_lag])
-        assert(timestamps[-1] == f['date'].value[-tweet_lead - 1])
-        tweet_counts = f['count'].value
-        within_tweet_counts = tweet_counts[tweet_lag - 1:-tweet_lead - 1]
-        assert(len(within_tweet_counts) == len(timestamps))
-        f.close()
-
-        # Aggregate the counts
-        logging.info('aggregating tweet counts...')
-        if aggregate_tweets_counts:
-            for i, timestamp in enumerate(timestamps):
-                # add up the lags
-                if len_lag_tweets:
-                    if len_lag_tweets < tweet_lag + i:
-                        pass  # ignore those with insufficient history data
-                    else:
-                        for j in range(len_lag_tweets):
-                            within_tweet_counts[i] += tweet_counts[i + j]
-                # add up the leads
-                if len_lead_tweets:
-                    for j in range(len_lead_tweets):
-                        within_tweet_counts[i] += tweet_counts[i + j + len_lag_tweets]
-
-        # Normalize tweet counts
-        logging.info('normalizing tweet counts...')
-        # tweet_count: (# of timeslots, h, w)
-        if tweet_counts_norm == 'day+time':
-            hist_seq = {i: {} for i in range(7)}
-            for i, timestamp in enumerate(timestamps):
-                date, timeslot = timestamp.split('_')
-                weekday = datetime.strptime(date, '%Y%m%d').weekday()
-                count_matrix = tweet_counts[i]
-                hist_seq[weekday][timeslot] = hist_seq[weekday].get(
-                    timeslot, []) + [count_matrix]
-            hist_max = {i: {} for i in range(7)}
-            for weekday, timeslots in hist_seq.iteritems():
-                for t, matrix_seq in timeslots.iteritems():
-                    hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
-            for i, timestamp in enumerate(timestamps):
-                date, timeslot = timestamp.split('_')
-                weekday = datetime.strptime(date, '%Y%m%d').weekday()
-                within_tweet_counts[i] = np.divide(
-                    tweet_counts[i],
-                    hist_max[weekday][timeslot],
-                    out=np.zeros_like(within_tweet_counts[i]),
-                    where=hist_max[weekday][timeslot] != 0
-                )
-        elif tweet_counts_norm == 'all':
-            max_counts = tweet_counts.max(axis=0)
-            for i, timestamp in enumerate(timestamps):
-                within_tweet_counts[i] = np.divide(
-                    tweet_counts[i],
-                    max_counts,
-                    out=np.zeros_like(within_tweet_counts[i]),
-                    where=max_counts != 0
-                )
-
+    # Load count
+    if tweet_count_data:
+        len_tweets = 0
+        if len_lag_tweets is not None:
+            len_tweets += len_lag_tweets
+        if len_lead_tweets is not None:
+            len_tweets += len_lead_tweets
+        tweet_counts = read_count_data(count_name='tweet_counts',
+                                       datapath=os.path.join(datapath, tweet_count_data_filename),
+                                       counts_norm=counts_norm,
+                                       flow_timestamps=timestamps,
+                                       aggregate_counts=aggregate_counts,
+                                       len_lag=len_lag_tweets,
+                                       len_lead=len_lead_tweets,
+                                       data_lag=tweet_lag,
+                                       data_lead=tweet_lead)
         # Insert the tweet counts dimension
-        data_mmn = np.insert(data_mmn, 2, within_tweet_counts, axis=1)
+        data_mmn = np.insert(data_mmn, 2, tweet_counts, axis=1)
+    if future_count_data:
+        future_counts = read_count_data(count_name='future_counts',
+                                        datapath=os.path.join(datapath, future_count_data_filename),
+                                        counts_norm=counts_norm,
+                                        flow_timestamps=timestamps,
+                                        aggregate_counts=aggregate_counts,
+                                        len_lag=len_lag_tweets,
+                                        len_lead=len_lead_tweets,
+                                        data_lag=tweet_lag,
+                                        data_lead=tweet_lead)
+        # Insert the future counts dimension
+        data_mmn = np.insert(data_mmn, 2, future_counts, axis=1)
+    if past_count_data:
+        past_counts = read_count_data(count_name='past_counts',
+                                      datapath=os.path.join(datapath, past_count_data_filename),
+                                      counts_norm=counts_norm,
+                                      flow_timestamps=timestamps,
+                                      aggregate_counts=aggregate_counts,
+                                      len_lag=len_lag_tweets,
+                                      len_lead=len_lead_tweets,
+                                      data_lag=tweet_lag,
+                                      data_lead=tweet_lead)
+        # Insert the past counts dimension
+        data_mmn = np.insert(data_mmn, 2, past_counts, axis=1)
+    if positive_count_data:
+        positive_counts = read_count_data(count_name='positive_counts',
+                                          datapath=os.path.join(datapath, positive_count_data_filename),
+                                          counts_norm=counts_norm,
+                                          flow_timestamps=timestamps,
+                                          aggregate_counts=aggregate_counts,
+                                          len_lag=len_lag_tweets,
+                                          len_lead=len_lead_tweets,
+                                          data_lag=tweet_lag,
+                                          data_lead=tweet_lead)
+        # Insert the positive counts dimension
+        data_mmn = np.insert(data_mmn, 2, positive_counts, axis=1)
+    if negative_count_data:
+        negative_counts = read_count_data(count_name='negative_counts',
+                                          datapath=os.path.join(datapath, negative_count_data_filename),
+                                          counts_norm=counts_norm,
+                                          flow_timestamps=timestamps,
+                                          aggregate_counts=aggregate_counts,
+                                          len_lag=len_lag_tweets,
+                                          len_lead=len_lead_tweets,
+                                          data_lag=tweet_lag,
+                                          data_lead=tweet_lead)
+        # Insert the negative counts dimension
+        data_mmn = np.insert(data_mmn, 2, negative_counts, axis=1)
 
     # save preprocessing stats
     fpkl = open(norm_name, 'wb')
@@ -420,7 +490,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         PeriodInterval=period_interval,
         TrendInterval=trend_interval,
         use_tweet_counts=tweet_count_data,
-        aggregate_tweets_counts=aggregate_tweets_counts
+        aggregate_counts=aggregate_counts
     )
     logging.info("XC shape: " + str(XC.shape))
     logging.info("XP shape: " + str(XP.shape))
@@ -549,35 +619,6 @@ def load_data(datapath, flow_data_filename=None, T=48,
             X_test.append(X_)
     if tweet_index_data:
         X_test.append(TI_test)
-    # if tweet_index_data:
-    #     train_datasets_list = zip([len_closeness, len_period, len_trend],
-    #                               [XC_train, XP_train, XT_train],
-    #                               [TC_train, TP_train, TT_train])
-    #     test_datasets_list = zip([len_closeness, len_period, len_trend],
-    #                              [XC_test, XP_test, XT_test],
-    #                              [TC_test, TP_test, TT_test])
-    #     for l, X_, T_ in train_datasets_list:
-    #         if l > 0:
-    #             X_train.append(X_)
-    #             X_train.append(T_)
-    #
-    #     for l, X_, T_ in test_datasets_list:
-    #         if l > 0:
-    #             X_test.append(X_)
-    #             X_test.append(T_)
-    # else:
-    #     train_datasets_list = zip([len_closeness, len_period, len_trend],
-    #                               [XC_train, XP_train, XT_train])
-    #     test_datasets_list = zip([len_closeness, len_period, len_trend],
-    #                              [XC_test, XP_test, XT_test])
-    #
-    #     for l, X_ in train_datasets_list:
-    #         if l > 0:
-    #             X_train.append(X_)
-    #
-    #     for l, X_ in test_datasets_list:
-    #         if l > 0:
-    #             X_test.append(X_)
 
     if metadata_dim is not None:
         meta_feature_train = meta_feature[:-len_test]
