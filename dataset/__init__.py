@@ -319,6 +319,7 @@ def read_count_data(count_name, datapath, counts_norm, flow_timestamps, aggregat
             # add up the lags
             if len_lag:
                 if len_lag < data_lag + i:
+                    # now data_lag is always 1 (no need further back)
                     pass  # ignore those with insufficient history data
                 elif len_lag > 1:
                     for j in range(1, len_lag):
@@ -340,26 +341,33 @@ def read_count_data(count_name, datapath, counts_norm, flow_timestamps, aggregat
             hist_seq[weekday][timeslot] = hist_seq[weekday].get(
                 timeslot, []) + [count_matrix]
         hist_max = {i: {} for i in range(7)}
+        hist_min = {i: {} for i in range(7)}
         for weekday, timeslots in hist_seq.iteritems():
             for t, matrix_seq in timeslots.iteritems():
                 hist_max[weekday][t] = np.array(matrix_seq).max(axis=0)
+                hist_min[weekday][t] = np.array(matrix_seq).min(axis=0)
         for i, timestamp in enumerate(flow_timestamps):
             date, timeslot = timestamp.split('_')
             weekday = datetime.strptime(date, '%Y%m%d').weekday()
+            numerator = within_window_counts[i] - hist_min[weekday][timeslot]
+            denominator = hist_max[weekday][timeslot] - hist_min[weekday][timeslot]
             within_window_counts[i] = np.divide(
-                within_window_counts[i],
-                hist_max[weekday][timeslot],
-                out=np.zeros_like(within_window_counts[i]),
-                where=hist_max[weekday][timeslot] != 0
+                numerator,
+                denominator,
+                out=np.zeros_like(numerator),
+                where=denominator != 0
             )
     elif counts_norm == 'all':
         max_counts = within_window_counts.max(axis=0)
+        min_counts = within_window_counts.min(axis=0)
+        denominator = max_counts - min_counts
         for i, timestamp in enumerate(flow_timestamps):
+            numerator = within_window_counts[i] - min_counts
             within_window_counts[i] = np.divide(
-                within_window_counts[i],
-                max_counts,
-                out=np.zeros_like(within_window_counts[i]),
-                where=max_counts != 0
+                numerator,
+                denominator,
+                out=np.zeros_like(numerator),
+                where=denominator != 0
             )
 
     return within_window_counts * 2 - 1
