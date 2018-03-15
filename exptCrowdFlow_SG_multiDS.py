@@ -18,6 +18,12 @@ from deepst.models.STResNet import stresnet
 import deepst.metrics as metrics
 from dataset import load_data
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
+set_session(tf.Session(config=config))
+
 # List of datasets names to run
 datasets_names = ['VDLset1', 'VDLset2', 'VDLset3', 'VDLset4']
 

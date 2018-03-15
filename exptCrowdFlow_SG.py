@@ -18,6 +18,12 @@ from deepst.models.STResNet import stresnet
 import deepst.metrics as metrics
 from dataset import load_data
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
+set_session(tf.Session(config=config))
+
 # Input parameters
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
