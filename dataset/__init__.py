@@ -380,12 +380,13 @@ def load_data(datapath, flow_data_filename=None, T=48,
               use_mask=False, len_test=None, norm_name=None, meta_data=False,
               weather_data=False, holiday_data=False,
               tweet_count_data=False, future_count_data=False,
-              past_count_data=False, positive_count_data=False,
+              past_count_data=False, present_count_data=False, positive_count_data=False,
               negative_count_data=False,
               tweet_index_data=False,
               tweet_count_data_filename=None,
               future_count_data_filename=None,
               past_count_data_filename=None,
+              present_count_data_filename=None,
               positive_count_data_filename=None,
               negative_count_data_filename=None,
               aggregate_counts=False,
@@ -455,6 +456,18 @@ def load_data(datapath, flow_data_filename=None, T=48,
                                       data_lead=tweet_lead)
         # Insert the past counts dimension
         data_mmn = np.insert(data_mmn, 2, past_counts, axis=1)
+    if present_count_data:
+        present_counts = read_count_data(count_name='present_counts',
+                                      datapath=os.path.join(datapath, present_count_data_filename),
+                                      counts_norm=counts_norm,
+                                      flow_timestamps=timestamps,
+                                      aggregate_counts=aggregate_counts,
+                                      len_lag=len_lag_tweets,
+                                      len_lead=len_lead_tweets,
+                                      data_lag=tweet_lag,
+                                      data_lead=tweet_lead)
+        # Insert the present counts dimension
+        data_mmn = np.insert(data_mmn, 2, present_counts, axis=1)
     if positive_count_data:
         positive_counts = read_count_data(count_name='positive_counts',
                                           datapath=os.path.join(datapath, positive_count_data_filename),

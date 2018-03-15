@@ -39,6 +39,7 @@ def run_experiment(ds_name):
     use_tweet_counts = True
     use_future_tense_counts = False
     use_past_tense_counts = False
+    use_present_tense_counts = False
     use_positive_counts = False
     use_negative_counts = False
     counts_norm = 'all'        # other options: 'day+time'
@@ -86,6 +87,15 @@ def run_experiment(ds_name):
         tweet_lead,
     )
     past_counts_data_fname = '{}_{}_M{}x{}_T{}_PastCount-{}+{}.h5'.format(
+        city_name,
+        ds_name,
+        map_width,
+        map_height,
+        len_interval,
+        tweet_lag,
+        tweet_lead,
+    )
+    present_counts_data_fname = '{}_{}_M{}x{}_T{}_PresentCount-{}+{}.h5'.format(
         city_name,
         ds_name,
         map_width,
@@ -205,6 +215,7 @@ def run_experiment(ds_name):
     tweet_index_info = '_tweetindex' if use_tweet_index else ''
     future_count_info = '_futurecount' if use_future_tense_counts else ''
     past_count_info = '_pastcount' if use_past_tense_counts else ''
+    present_count_info = '_presentcount' if use_present_tense_counts else ''
     positive_count_info = '_positivecount' if use_positive_counts else ''
     negative_count_info = '_negativecount' if use_negative_counts else ''
     if use_tweet_counts or use_tweet_index:
@@ -230,7 +241,7 @@ def run_experiment(ds_name):
         dropouts_info = ''
 
     cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}'
-                   '{9}{10}{11}{12}{13}{14}{15}{16}{17}{18}{19}{20}.h5').format(
+                   '{9}{10}{11}{12}{13}{14}{15}{16}{17}{18}{19}{20}{21}.h5').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
@@ -250,8 +261,9 @@ def run_experiment(ds_name):
         dropouts_info,       # 16
         future_count_info,   # 17
         past_count_info,     # 18
-        positive_count_info,  # 19
-        negative_count_info,  # 20
+        present_count_info,  # 19
+        positive_count_info,  # 20
+        negative_count_info,  # 21
     )
     cache_fpath = os.path.join(path_cache, cache_fname)
     norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
@@ -261,7 +273,7 @@ def run_experiment(ds_name):
 
     # Define the file paths of the result and model files
     hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
-                        '{13}{14}{15}{16}{17}{18}{19}{20}{21}{22}').format(
+                        '{13}{14}{15}{16}{17}{18}{19}{20}{21}{22}{23}').format(
         city_name,           # 0
         ds_name,             # 1
         map_width,           # 2
@@ -283,8 +295,9 @@ def run_experiment(ds_name):
         dropouts_info,       # 18
         future_count_info,   # 19
         past_count_info,     # 20
-        positive_count_info,  # 21
-        negative_count_info,  # 22
+        present_count_info   # 21
+        positive_count_info,  # 22
+        negative_count_info,  # 23
     )
     dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
     dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -450,6 +463,7 @@ def run_experiment(ds_name):
                     tweet_count_data=use_tweet_counts,
                     future_count_data=use_future_tense_counts,
                     past_count_data=use_past_tense_counts,
+                    present_count_data=use_present_tense_counts,
                     positive_count_data=use_positive_counts,
                     negative_count_data=use_negative_counts,
                     aggregate_counts=aggregate_counts,
@@ -460,6 +474,7 @@ def run_experiment(ds_name):
                     tweet_count_data_filename=tweet_counts_data_fname,
                     future_count_data_filename=future_counts_data_fname,
                     past_count_data_filename=past_counts_data_fname,
+                    present_count_data_filename=present_counts_data_fname,
                     positive_count_data_filename=positive_counts_data_fname,
                     negative_count_data_filename=negative_counts_data_fname,
                     counts_norm=counts_norm,
