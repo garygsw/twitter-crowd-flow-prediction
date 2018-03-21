@@ -20,6 +20,7 @@ from dataset import load_data
 
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
+
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 set_session(tf.Session(config=config))
@@ -27,7 +28,7 @@ set_session(tf.Session(config=config))
 # Input parameters
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
-ds_name = 'VDLset1'   # dataset name
+ds_name = 'VLDset1'   # dataset name
 map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
 len_interval = 30               # 30 minutes per time slot
 CACHEDATA = False               # cache data or NOT
@@ -39,40 +40,30 @@ use_future_tense_counts = False
 use_past_tense_counts = False
 use_positive_counts = False
 use_negative_counts = False
-counts_norm = 'all'        # other options: 'day+time'
 aggregate_counts = True
-tweet_lag = 1                    # how many lags tweet info in dataset
-tweet_lead = 10                  # how many lead tweet info in dataset
-use_tweet_index = False
-index_sum_type = 'simple'        # other options: 'weighted'
-sparse_index = True
-train_embeddings = True
-reduce_index_dims = True
-hidden_layers = (10, 2)
-use_dropout = True
-dropout_rate = 0.2
-batch_size = 16              # batch size
-vocab_size = 100000          # size of tweet tokens vocabulary
-seq_size = 100               # maximum size of tweets tokens indexes per grid
-embedding_size = 25          # size of tweet token embedding vector
+batch_size = 32              # batch size
 nb_epoch = 500               # number of epoch at training stage
 nb_epoch_cont = 100          # number of epoch at training (cont) stage
 T = 24 * 60 / len_interval   # number of time intervals in one day
 lr = 0.0002                  # learning rate
-len_closeness = 4            # length of closeness dependent sequence
-len_period = 1               # length of peroid dependent sequence
-len_trend = 1                # length of trend dependent sequence
-len_lag_tweets = 2           # length of tweets lag dependent sequence
-len_lead_tweets = 0          # length of tweets lead dependent sequence
-len_tweets = len_lag_tweets + len_lead_tweets
 nb_residual_unit = 2         # number of residual units
-period_interval = 1          # period interval length (in days)
-trend_interval = 7           # period interval length (in days)
+day_interval = 1             # day interval length (in days)
+week_interval = 7            # week interval length (in days)
 kernal_size = (3, 3)         # window for convolutional NN
 nb_filters = 64              # for conv1 layer
 days_test = 7 * 4            # number of days from the back as test set
 len_test = T * days_test
-validation_split = 0.1              # during development training phase
+validation_split = 0.1       # during development training phase
+len_hourly = 4               # length of hourly historical sequence
+len_daily = 1                # length of daily historical sequence
+len_weekly = 1               # length of weekly historical sequence
+tweet_lag = 1                # how many lags tweet info in dataset
+tweet_lead = 10              # how many lead tweet info in dataset
+len_lag_tweets = 2           # length of tweets lag dependent sequence
+len_lead_tweets = 0          # length of tweets lead dependent sequence
+len_tweets_window = len_lag_tweets + len_lead_tweets
+
+# Define inputs filename formats
 flow_data_fname = '{}_{}_M{}x{}_T{}_InOut.h5'.format(city_name,
                                                      ds_name,
                                                      map_width,
@@ -126,21 +117,6 @@ negative_counts_data_fname = '{}_{}_M{}x{}_T{}_NegativeCount-{}+{}.h5'.format(
     len_interval,
     tweet_lag,
     tweet_lead,
-)
-tweet_index_data_fname = '{}_{}_M{}x{}_T{}_TweetIndex-{}+{}.npz'.format(
-    city_name,
-    ds_name,
-    map_width,
-    map_height,
-    len_interval,
-    tweet_lag,
-    tweet_lead,
-)
-initial_word_embeddings_fname = '{}_{}_{}v_{}d-embeddings.npy'.format(
-    city_name,
-    ds_name,
-    vocab_size,
-    embedding_size
 )
 DATAPATH = 'dataset'
 path_cache = os.path.join(DATAPATH, 'CACHE')     # cache path
@@ -201,91 +177,61 @@ else:
     meta_info = ''
 mask_info = '_masked' if use_mask else ''
 tweet_count_info = '_tweetcount' if use_tweet_counts else ''
-tweet_index_info = '_tweetindex' if use_tweet_index else ''
 future_count_info = '_futurecount' if use_future_tense_counts else ''
 past_count_info = '_pastcount' if use_past_tense_counts else ''
 positive_count_info = '_positivecount' if use_positive_counts else ''
 negative_count_info = '_negativecount' if use_negative_counts else ''
-if use_tweet_counts or use_tweet_index:
+if use_tweet_counts:
     tweet_len_info = '_tweetlen-%s+%s' % (len_lag_tweets, len_lead_tweets)
 else:
     tweet_len_info = ''
-if use_tweet_index:
-    tweet_index_params = '_v%s_n%s_k%s' % (vocab_size,
-                                           seq_size,
-                                           embedding_size)
-    if reduce_index_dims:
-        reduce_dim_info = '_reduce' + str(hidden_layers)
-        if use_dropout:
-            dropouts_info = '_dropout%s' % dropout_rate
-        else:
-            dropouts_info = ''
-    else:
-        reduce_dim_info = ''
-        dropouts_info = ''
-else:
-    tweet_index_params = ''
-    reduce_dim_info = ''
-    dropouts_info = ''
 
 cache_fname = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}'
-               '{9}{10}{11}{12}{13}{14}{15}{16}{17}{18}{19}{20}.h5').format(
-    city_name,           # 0
-    ds_name,             # 1
-    map_width,           # 2
-    map_height,          # 3
-    len_interval,        # 4
-    batch_size,          # 5
-    len_closeness,       # 6
-    len_period,          # 7
-    len_trend,           # 8
-    meta_info,           # 9
-    mask_info,           # 10
-    tweet_count_info,    # 11
-    tweet_index_info,    # 12
-    tweet_index_params,  # 13
-    tweet_len_info,      # 14
-    reduce_dim_info,     # 15
-    dropouts_info,       # 16
-    future_count_info,   # 17
-    past_count_info,     # 18
-    positive_count_info,  # 19
-    negative_count_info,  # 20
+               '{9}{10}{11}{12}{13}{14}{15}{16}.h5').format(
+    city_name,            # 0
+    ds_name,              # 1
+    map_width,            # 2
+    map_height,           # 3
+    len_interval,         # 4
+    batch_size,           # 5
+    len_hourly,           # 6
+    len_daily,            # 7
+    len_weekly,           # 8
+    meta_info,            # 9
+    mask_info,            # 10
+    tweet_count_info,     # 11
+    tweet_len_info,       # 12
+    future_count_info,    # 13
+    past_count_info,      # 14
+    positive_count_info,  # 15
+    negative_count_info,  # 16
 )
 cache_fpath = os.path.join(path_cache, cache_fname)
 norm_fname = '{}_{}_Normalizer.pkl'.format(city_name, ds_name)
 norm_fpath = os.path.join(path_norm, norm_fname)
-initial_embeddings_fpath = os.path.join(DS_DATAPATH,
-                                        initial_word_embeddings_fname)
-
 
 # Define the file paths of the result and model files
-# Define the file paths of the result and model files
-hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}{9}{10}_resunit{11}_lr{12}'
-                    '{13}{14}{15}{16}{17}{18}{19}{20}{21}{22}').format(
-    city_name,           # 0
-    ds_name,             # 1
-    map_width,           # 2
-    map_height,          # 3
-    len_interval,        # 4
-    batch_size,          # 5
-    len_closeness,       # 6
-    len_period,          # 7
-    len_trend,           # 8
-    meta_info,           # 9
-    mask_info,           # 10
-    nb_residual_unit,    # 11
-    lr,                  # 12
-    tweet_count_info,    # 13
-    tweet_index_info,    # 14
-    tweet_index_params,  # 15
-    tweet_len_info,      # 16
-    reduce_dim_info,     # 17
-    dropouts_info,       # 18
-    future_count_info,   # 19
-    past_count_info,     # 20
-    positive_count_info,  # 21
-    negative_count_info,  # 22
+hyperparams_name = ('{0}_{1}_M{2}x{3}_T{4}_b{5}_c{6}.p{7}.t{8}{9}{10}'
+                    '_resunit{11}_lr{12}{13}{14}{15}{16}{17}{18}').format(
+    city_name,            # 0
+    ds_name,              # 1
+    map_width,            # 2
+    map_height,           # 3
+    len_interval,         # 4
+    batch_size,           # 5
+    len_hourly,           # 6
+    len_daily,            # 7
+    len_weekly,           # 8
+    meta_info,            # 9
+    mask_info,            # 10
+    nb_residual_unit,     # 11
+    lr,                   # 12
+    tweet_count_info,     # 13
+    tweet_len_info,       # 14
+    future_count_info,    # 15
+    past_count_info,      # 16
+    positive_count_info,  # 17
+    negative_count_info,  # 18
 )
 dev_checkpoint_fname = '{}.dev.best.h5'.format(hyperparams_name)
 dev_checkpoint_fpath = os.path.join(path_model, dev_checkpoint_fname)
@@ -318,19 +264,19 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 root_logger.handlers = [fileHandler, consoleHandler]
 
 
-def build_model(external_dim, loss, metric, initial_word_embeddings=None):
+def build_model(external_dim, loss, metric):
     '''Define the model configuration and optimizer, and compiles it.'''
-    c_conf = None if len_closeness <= 0 else len_closeness
-    p_conf = None if len_period <= 0 else len_period
-    t_conf = None if len_trend <= 0 else len_trend
-    tweet_conf = None if len_tweets <= 0 else len_tweets
+    len_hour = None if len_hourly <= 0 else len_hourly
+    len_day = None if len_daily <= 0 else len_daily
+    len_week = None if len_weekly <= 0 else len_weekly
+    len_tweet = None if len_tweets_window <= 0 else len_tweets_window
 
     model = stresnet(map_height=map_height,
                      map_width=map_width,
-                     len_closeness=c_conf,
-                     len_period=p_conf,
-                     len_trend=t_conf,
-                     len_tweets=tweet_conf,
+                     len_hour=len_hour,
+                     len_day=len_day,
+                     len_week=len_week,
+                     len_tweet=len_tweet,
                      external_dim=external_dim,
                      nb_residual_unit=nb_residual_unit,
                      nb_filters=nb_filters,
@@ -340,19 +286,7 @@ def build_model(external_dim, loss, metric, initial_word_embeddings=None):
                      use_past_tense_counts=use_past_tense_counts,
                      use_positive_counts=use_positive_counts,
                      use_negative_counts=use_negative_counts,
-                     aggregate_counts=aggregate_counts,
-                     use_tweet_index=use_tweet_index,
-                     sum_type=index_sum_type,
-                     sparse_index=sparse_index,
-                     train_embeddings=train_embeddings,
-                     vocab_size=vocab_size,
-                     seq_size=seq_size,
-                     embedding_size=embedding_size,
-                     initial_embeddings=initial_word_embeddings,
-                     reduce_index_dims=reduce_index_dims,
-                     hidden_layers=hidden_layers,
-                     use_dropout=use_dropout,
-                     dropout_rate=dropout_rate)
+                     aggregate_counts=aggregate_counts)
     adam = Adam(lr=lr)
     model.compile(loss=loss, optimizer=adam, metrics=[metric])
     model.summary()
@@ -436,23 +370,23 @@ def main():
                 datapath=DS_DATAPATH,
                 flow_data_filename=flow_data_fname,
                 T=T,
-                len_closeness=len_closeness,
-                len_period=len_period,
-                len_trend=len_trend,
+                len_hour=len_hourly,
+                len_day=len_daily,
+                len_week=len_weekly,
                 len_lag_tweets=len_lag_tweets,
                 len_lead_tweets=len_lead_tweets,
-                period_interval=period_interval,
-                trend_interval=trend_interval,
+                day_interval=day_interval,
+                week_interval=week_interval,
                 len_test=len_test,
                 norm_name=norm_fpath,
                 meta_data=use_meta,
-                weather_data=use_weather,
-                holiday_data=use_holidays,
-                tweet_count_data=use_tweet_counts,
-                future_count_data=use_future_tense_counts,
-                past_count_data=use_past_tense_counts,
-                positive_count_data=use_positive_counts,
-                negative_count_data=use_negative_counts,
+                use_weather=use_weather,
+                use_holiday=use_holidays,
+                use_tweet_counts=use_tweet_counts,
+                use_future_tense_counts=use_future_tense_counts,
+                use_past_tense_counts=use_past_tense_counts,
+                use_positive_counts=use_positive_counts,
+                use_negative_counts=use_negative_counts,
                 aggregate_counts=aggregate_counts,
                 tweet_lag=tweet_lag,
                 tweet_lead=tweet_lead,
@@ -463,9 +397,6 @@ def main():
                 past_count_data_filename=past_counts_data_fname,
                 positive_count_data_filename=positive_counts_data_fname,
                 negative_count_data_filename=negative_counts_data_fname,
-                counts_norm=counts_norm,
-                tweet_index_data=use_tweet_index,
-                tweet_index_data_filename=tweet_index_data_fname,
                 use_mask=use_mask
             )
         if CACHEDATA:
@@ -478,15 +409,9 @@ def main():
     # use masked rmse if use_mask
     loss_function = metrics.masked_mse(mask) if use_mask else metrics.mse
     metric_function = metrics.masked_rmse(mask) if use_mask else metrics.rmse
-    if use_tweet_index:
-        # Read initial embeddings
-        initial_word_embeddings = np.load(initial_embeddings_fpath)
-    else:
-        initial_word_embeddings = None
     model = build_model(external_dim,
                         loss_function,
-                        metric_function,
-                        initial_word_embeddings)
+                        metric_function)
     print_elasped(ts, 'model compilation')
 
     print_header("training model (development)...")
@@ -563,8 +488,6 @@ def main():
 
     # saves the prediction results
     predictions = model.predict(X_test)
-    #logging.info('Predictions shape: ' + str(predictions.shape))
-    #logging.info('Test shape: ' + str(Y_test.shape))
     np.save(predictions_fpath, predictions)
     np.save(test_true_y_fpath, Y_test)
     np.save(pred_timestamps_fpath, timestamp_test)
@@ -572,7 +495,8 @@ def main():
     # prints the full RMSE scores
     if use_mask:
         full_mask = np.tile(mask, [len_test, 1, 1, 1])
-        full_rmse = ((Y_test[full_mask] - predictions[full_mask]) ** 2).mean() ** 0.5
+        errors = Y_test[full_mask] - predictions[full_mask]
+        full_rmse = (errors ** 2).mean() ** 0.5
     else:
         full_rmse = ((Y_test - predictions) ** 2).mean() ** 0.5
     logging.info('Full RMSE: %.6f' % full_rmse)
