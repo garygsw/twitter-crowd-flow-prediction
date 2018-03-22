@@ -28,7 +28,7 @@ set_session(tf.Session(config=config))
 # Input parameters
 np.random.seed(1337)  # for reproducibility
 city_name = 'SG'
-ds_name = 'VLDset1'   # dataset name
+ds_name = 'VDLset1'   # dataset name
 map_height, map_width = 49, 89  # (23, 44) - 1km, (46, 87) - 500m
 len_interval = 30               # 30 minutes per time slot
 CACHEDATA = False               # cache data or NOT
@@ -383,8 +383,8 @@ def main():
                 use_weather=use_weather,
                 use_holiday=use_holidays,
                 use_tweet_counts=use_tweet_counts,
-                use_future_tense_counts=use_future_tense_counts,
-                use_past_tense_counts=use_past_tense_counts,
+                use_future_counts=use_future_tense_counts,
+                use_past_counts=use_past_tense_counts,
                 use_positive_counts=use_positive_counts,
                 use_negative_counts=use_negative_counts,
                 aggregate_counts=aggregate_counts,

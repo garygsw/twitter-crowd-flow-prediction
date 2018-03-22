@@ -55,8 +55,9 @@ def ResUnits(residual_unit, nb_filter, repetitions=1):
     return f
 
 
-def stresnet(map_height, map_width, len_hour, len_day, len_week, len_tweets=0,
-             external_dim, nb_filters=64, kernal_size=(3, 3),
+def stresnet(map_height, map_width, external_dim,
+             len_hour, len_day, len_week, len_tweet=0,
+             nb_filters=64, kernal_size=(3, 3),
              nb_residual_unit=2, use_tweet_counts=False,
              aggregate_counts=False, use_future_tense_counts=False,
              use_past_tense_counts=False, use_present_tense_counts=False,
@@ -85,7 +86,7 @@ def stresnet(map_height, map_width, len_hour, len_day, len_week, len_tweets=0,
     for i, len_seq in enumerate([len_hour, len_day, len_week]):
         if len_seq is not None:
             # Add tweet counts with len_hour
-            if i == 0 and use_tweet_counts and len_tweets > 0:
+            if i == 0 and use_tweet_counts and len_tweet > 0:
                 if aggregate_counts:
                     flow_input = Input(shape=(len_seq * input_dim +
                                               total_count_types,
@@ -93,7 +94,7 @@ def stresnet(map_height, map_width, len_hour, len_day, len_week, len_tweets=0,
                                               map_width))
                 else:
                     flow_input = Input(shape=(len_seq * input_dim +
-                                              len_tweets * total_count_types,
+                                              len_tweet * total_count_types,
                                               map_height,
                                               map_width))
             else:
@@ -120,8 +121,6 @@ def stresnet(map_height, map_width, len_hour, len_day, len_week, len_tweets=0,
                                   border_mode='same',
                                   data_format='channels_first')(activation)
             outputs.append(conv2)
-    if use_tweet_index:
-        main_inputs.append(tweet_index_input)
 
     # parameter-matrix-based fusion
     if len(outputs) == 1:  # no fusion needed

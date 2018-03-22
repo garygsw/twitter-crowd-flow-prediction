@@ -61,7 +61,7 @@ class STMatrix(object):
 
     def create_dataset(self, len_hour=3, len_day=3, day_interval=1,
                        len_week=3, week_interval=7, len_tweet=1,
-                       use_tweet_features=False, aggregate_counts=False):
+                       use_tweet_features=False, aggregate_counts=True):
         '''Prepare rolling horizon dataset.'''
         offset_frame = pd.DateOffset(minutes=24 * 60 // self.T)
         XH = []
@@ -69,6 +69,9 @@ class STMatrix(object):
         XW = []
         Y = []
         timestamps_Y = []
+
+        if use_tweet_features and aggregate_counts:
+            len_tweet = 1
 
         # Generate a list of all look back time stamps
         depends = [range(1, len_tweet + 1),
@@ -293,10 +296,10 @@ def load_data(datapath, flow_data_filename=None, T=48,
               len_lag_tweets=None, len_lead_tweets=None,
               day_interval=1, week_interval=7,
               use_mask=False, len_test=None, norm_name=None, meta_data=False,
-              use_weather=False, use_holiday=False, use_tweet_count=False,
-              use_past_count=False, use_present_count=False,
-              use_future_count=False,
-              use_positive_count=False, use_negative_count=False,
+              use_weather=False, use_holiday=False, use_tweet_counts=False,
+              use_past_counts=False, use_present_counts=False,
+              use_future_counts=False,
+              use_positive_counts=False, use_negative_counts=False,
               weather_data_filename=None,
               holiday_data_filename=None,
               tweet_count_data_filename=None,
@@ -334,10 +337,10 @@ def load_data(datapath, flow_data_filename=None, T=48,
         len_tweet += len_lag_tweets
     if len_lead_tweets is not None:
         len_tweet += len_lead_tweets
-    use_tweets = (use_tweet_count or use_future_count or use_present_count) or \
-                 (use_past_count or use_positive_count or use_negative_count) or \
-                 (use_positive_count or use_negative_count)
-    if use_tweet_count:
+    use_tweets = (use_tweet_counts or use_future_counts or use_present_counts) or \
+                 (use_past_counts or use_positive_counts or use_negative_counts) or \
+                 (use_positive_counts or use_negative_counts)
+    if use_tweet_counts:
         tweet_counts = read_count_data(
             count_name='tweet_counts',
             datapath=os.path.join(datapath, tweet_count_data_filename),
@@ -350,7 +353,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         )
         # Insert the tweet counts dimension
         data_mmn = np.insert(data_mmn, 2, tweet_counts, axis=1)
-    if use_future_count:
+    if use_future_counts:
         future_counts = read_count_data(
             count_name='future_counts',
             datapath=os.path.join(datapath, future_count_data_filename),
@@ -363,7 +366,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         )
         # Insert the future counts dimension
         data_mmn = np.insert(data_mmn, 2, future_counts, axis=1)
-    if use_past_count:
+    if use_past_counts:
         past_counts = read_count_data(
             count_name='past_counts',
             datapath=os.path.join(datapath, past_count_data_filename),
@@ -376,7 +379,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         )
         # Insert the past counts dimension
         data_mmn = np.insert(data_mmn, 2, past_counts, axis=1)
-    if use_present_count:
+    if use_present_counts:
         present_counts = read_count_data(
             count_name='present_counts',
             datapath=os.path.join(datapath, present_count_data_filename),
@@ -389,7 +392,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         )
         # Insert the present counts dimension
         data_mmn = np.insert(data_mmn, 2, present_counts, axis=1)
-    if use_positive_count:
+    if use_positive_counts:
         positive_counts = read_count_data(
             count_name='positive_counts',
             datapath=os.path.join(datapath, positive_count_data_filename),
@@ -402,7 +405,7 @@ def load_data(datapath, flow_data_filename=None, T=48,
         )
         # Insert the positive counts dimension
         data_mmn = np.insert(data_mmn, 2, positive_counts, axis=1)
-    if use_negative_count:
+    if use_negative_counts:
         negative_counts = read_count_data(
             count_name='negative_counts',
             datapath=os.path.join(datapath, negative_count_data_filename),
@@ -436,9 +439,9 @@ def load_data(datapath, flow_data_filename=None, T=48,
         use_tweet_features=use_tweets,
         aggregate_counts=aggregate_counts
     )
-    logging.info("XC shape: " + str(XH.shape))
-    logging.info("XP shape: " + str(XD.shape))
-    logging.info("XT shape: " + str(XW.shape))
+    logging.info("XH shape: " + str(XH.shape))
+    logging.info("XD shape: " + str(XD.shape))
+    logging.info("XW shape: " + str(XW.shape))
     logging.info("Y shape: " + str(Y.shape))
 
     # Segment the training set
@@ -458,9 +461,9 @@ def load_data(datapath, flow_data_filename=None, T=48,
     XW_test = XW[-len_test:]
     Y_test = Y[-len_test:]
     timestamp_test = timestamps_Y[-len_test:]
-    logging.info('test set XC shape: ' + str(XH_test.shape))
-    logging.info('test set XP shape: ' + str(XD_test.shape))
-    logging.info('test set XT shape: ' + str(XW_test.shape))
+    logging.info('test set XH shape: ' + str(XH_test.shape))
+    logging.info('test set XD shape: ' + str(XD_test.shape))
+    logging.info('test set XW shape: ' + str(XW_test.shape))
     logging.info('test set Y shape: ' + str(Y_test.shape))
 
     # Prepare the external component
